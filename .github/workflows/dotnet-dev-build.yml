@@ -1,0 +1,37 @@
+name: .NET Dev Build, Artifact, and Dependabot Metadata
+
+on:
+  push:
+    branches: [ develop ]
+  pull_request:
+    branches: [ develop ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Restore dependencies
+        run: dotnet restore ./WileyBudgetManagement/WileyBudgetManagement.csproj
+      - name: Build
+        run: dotnet build ./WileyBudgetManagement/WileyBudgetManagement.csproj --no-restore --configuration Debug
+      - name: Publish
+        run: dotnet publish ./WileyBudgetManagement/WileyBudgetManagement.csproj --no-restore --configuration Debug --output ./publish
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: WileyBudgetManagement-dev
+          path: ./publish
+
+  dependabot-metadata:
+    if: ${{ github.actor == 'dependabot[bot]' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch Metadata from Dependabot PRs
+        uses: dependabot/fetch-metadata@v2.4.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}

@@ -14,6 +14,13 @@
     <Compile Include="..\Models\SanitationDistrict.cs" />
     <Compile Include="..\Forms\MainForm.cs" />
     <Compile Include="..\Forms\MockSanitationData.cs" />
+    <Compile Include="..\Forms\DashboardForm.cs" />
+    <Compile Include="..\Forms\DashboardForm.Designer.cs" />
+    <Compile Include="..\Forms\WaterInput.cs" />
+    <Compile Include="..\Forms\ApartmentsInput.cs" />
+    <Compile Include="..\Forms\TrashInput.cs" />
+    <Compile Include="..\Forms\SummaryPage.cs" />
+    <Compile Include="..\Forms\SummaryPage.Designer.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="SkiaSharp.Views.WindowsForms" Version="3.116.1" />
