@@ -11,6 +11,8 @@
 
   <ItemGroup>
     <PackageReference Include="LiveChartsCore.SkiaSharpView.WinForms" Version="2.0.0-rc5.4" />
+    <PackageReference Include="Syncfusion.SfDataGrid.WinForms" Version="26.1.42" />
+    <PackageReference Include="Syncfusion.Tools.Windows" Version="26.1.42" />
     <Compile Include="..\Models\SanitationDistrict.cs" />
     <Compile Include="..\Forms\MainForm.cs" />
     <Compile Include="..\Forms\MockSanitationData.cs" />
@@ -24,6 +26,7 @@
     <Compile Include="..\Forms\TrashInput.Designer.cs" />
     <Compile Include="..\Forms\SummaryPage.cs" />
     <Compile Include="..\Forms\SummaryPage.Designer.cs" />
+    <Compile Include="..\Forms\ScenarioCalculator.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="SkiaSharp.Views.WindowsForms" Version="3.116.1" />
