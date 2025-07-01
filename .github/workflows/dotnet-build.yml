@@ -17,6 +17,13 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
+          cache: true
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('WileyBudgetManagement/**/*.csproj') }}
+          restore-keys: ${{ runner.os }}-nuget-
       - name: Restore dependencies
         run: dotnet restore ./WileyBudgetManagement/WileyBudgetManagement.csproj
       - name: Build
