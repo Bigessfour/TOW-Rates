@@ -1,8 +1,10 @@
 using System;
 using System.ComponentModel;
+using System.Linq;
 using System.Windows.Forms;
 using Syncfusion.WinForms.DataGrid;
 using WileyBudgetManagement.Models;
+using WileyBudgetManagement.Forms;
 
 namespace WileyBudgetManagement.Forms
 {
@@ -16,6 +18,7 @@ namespace WileyBudgetManagement.Forms
             InitializeComponent();
             InitializeTrashDataGrid();
             LoadTrashData();
+            SetupValidation();
         }
 
         private void InitializeTrashDataGrid()
@@ -104,6 +107,162 @@ namespace WileyBudgetManagement.Forms
             };
 
             trashDataGrid.DataSource = trashData;
+        }
+
+        private void SetupValidation()
+        {
+            // Add Save button for validation
+            var saveButton = new Button
+            {
+                Text = "Save & Validate",
+                Size = new Size(120, 30),
+                Location = new Point(10, 10),
+                BackColor = Color.LightGreen
+            };
+            saveButton.Click += SaveButton_Click;
+            this.Controls.Add(saveButton);
+
+            // Move data grid down to make room for button
+            trashDataGrid.Location = new Point(0, 50);
+            trashDataGrid.Height = this.Height - 50;
+            trashDataGrid.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+        }
+
+        private void SaveButton_Click(object? sender, EventArgs e)
+        {
+            ValidateAllData();
+        }
+
+        private void ValidateAllData()
+        {
+            var validationErrors = new List<string>();
+            var validationWarnings = new List<string>();
+
+            for (int i = 0; i < trashData.Count; i++)
+            {
+                var district = trashData[i];
+                var rowPrefix = $"Row {i + 1} ({district.Account}): ";
+
+                // Account validation
+                if (!ValidationHelper.ValidateAccount(district.Account, "T"))
+                {
+                    validationErrors.Add($"{rowPrefix}Account must start with 'T' followed by 3-9 alphanumeric characters");
+                }
+
+                // Label validation
+                if (!ValidationHelper.ValidateLabel(district.Label))
+                {
+                    validationErrors.Add($"{rowPrefix}Label must be 3-100 characters with valid characters only");
+                }
+
+                // Section validation
+                if (!ValidationHelper.ValidateSection(district.Section))
+                {
+                    validationErrors.Add($"{rowPrefix}Section must be 2-50 alphanumeric characters");
+                }
+
+                // Budget validations
+                if (!ValidationHelper.ValidateBudgetAmount(district.CurrentFYBudget))
+                {
+                    validationErrors.Add($"{rowPrefix}Current FY Budget must be between $0 and $10,000,000");
+                }
+
+                if (district.MonthlyInput < 0)
+                {
+                    validationErrors.Add($"{rowPrefix}Monthly Input cannot be negative");
+                }
+
+                if (district.YearToDateSpending < 0)
+                {
+                    validationErrors.Add($"{rowPrefix}Year to Date Spending cannot be negative");
+                }
+
+                if (district.YearToDateSpending > district.CurrentFYBudget)
+                {
+                    validationWarnings.Add($"{rowPrefix}YTD Spending exceeds annual budget");
+                }
+
+                if (!ValidationHelper.ValidatePercentage(district.PercentOfBudget))
+                {
+                    validationErrors.Add($"{rowPrefix}Percent of Budget must be between 0.0 and 1.0");
+                }
+
+                if (!ValidationHelper.ValidateRate(district.RequiredRate))
+                {
+                    validationErrors.Add($"{rowPrefix}Required Rate must be between $0 and $10,000");
+                }
+
+                // Trash-specific validations
+                if (district.SeasonalAdjustment < 0)
+                {
+                    validationErrors.Add($"{rowPrefix}Seasonal Adjustment cannot be negative");
+                }
+
+                if (district.SeasonalAdjustment > district.CurrentFYBudget * 0.5m)
+                {
+                    validationWarnings.Add($"{rowPrefix}Seasonal Adjustment exceeds 50% of annual budget");
+                }
+
+                // Business rule validations
+                decimal calculatedRemaining = district.CurrentFYBudget - district.YearToDateSpending;
+                if (Math.Abs(district.BudgetRemaining - calculatedRemaining) > 0.01m)
+                {
+                    validationWarnings.Add($"{rowPrefix}Budget Remaining should be {calculatedRemaining:C} (Budget - YTD)");
+                }
+
+                if (district.CurrentFYBudget > 0)
+                {
+                    decimal calculatedPercent = district.YearToDateSpending / district.CurrentFYBudget;
+                    if (Math.Abs(district.PercentOfBudget - calculatedPercent) > 0.01m)
+                    {
+                        validationWarnings.Add($"{rowPrefix}Percent of Budget should be {calculatedPercent:P2} (YTD/Budget)");
+                    }
+                }
+
+                // Check if monthly input aligns with annual budget
+                if (district.MonthlyInput > 0 && district.CurrentFYBudget > 0)
+                {
+                    decimal annualFromMonthly = district.MonthlyInput * 12;
+                    decimal variance = Math.Abs(annualFromMonthly - district.CurrentFYBudget) / district.CurrentFYBudget;
+                    if (variance > 0.1m)
+                    {
+                        validationWarnings.Add($"{rowPrefix}Monthly Input * 12 ({annualFromMonthly:C}) differs significantly from Annual Budget");
+                    }
+                }
+            }
+
+            // Display validation results
+            if (validationErrors.Any() || validationWarnings.Any())
+            {
+                string message = "";
+
+                if (validationErrors.Any())
+                {
+                    message += "ERRORS (must be fixed):\n";
+                    message += string.Join("\n", validationErrors.Take(10));
+                    if (validationErrors.Count > 10)
+                        message += $"\n... and {validationErrors.Count - 10} more errors";
+                    message += "\n\n";
+                }
+
+                if (validationWarnings.Any())
+                {
+                    message += "WARNINGS (recommended to fix):\n";
+                    message += string.Join("\n", validationWarnings.Take(10));
+                    if (validationWarnings.Count > 10)
+                        message += $"\n... and {validationWarnings.Count - 10} more warnings";
+                }
+
+                var icon = validationErrors.Any() ? MessageBoxIcon.Error : MessageBoxIcon.Warning;
+                var title = validationErrors.Any() ? "Trash Data Validation Errors" : "Trash Data Validation Warnings";
+
+                MessageBox.Show(message, title, MessageBoxButtons.OK, icon);
+            }
+            else
+            {
+                MessageBox.Show("All trash data validations passed successfully!", "Validation Complete",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
         }
 
         public BindingList<SanitationDistrict> GetTrashData()

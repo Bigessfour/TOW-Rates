@@ -1,0 +1,326 @@
+# Wiley Sanitation District Budget Management Software Status
+## Date: July 01, 2025, 01:08 PM MDT
+## Version: Draft 1.0
+
+## 1. Program Intention
+- **Purpose**: Audit actual expenses against financial goals (e.g., surplus, new trash truck, employee pay/benefits) to ensure sustainable rates and sound decisions using real-world data.
+- **Financial Goals**: Build surplus, plan for assets (e.g., $350,000 trash truck), adjust pay, assess benefit impacts across enterprises.
+- **Trend Analysis**: Track monthly data to identify patterns (e.g., Trash underfunding) for annual rate adjustments.
+- **Audit Support**: Reflects monthly inputs for accountant review; specific numbers not audited but based on actuals.
+
+## 2. Software Structure
+- **Tables**: Five total—Sanitation District (Sewer, fully implemented), Water, Trash, Apartments (placeholders), and Combined Summary Page.
+- **Column Layout** (per table):
+  - **Current FY Budget**: Pre-filled target (e.g., $15,500.00 for 311.00).
+  - **Monthly Input**: Editable for actual monthly data.
+  - **Year-to-Date Spending**: Calculated sum of monthly inputs.
+  - **% of Budget**: Calculated (Year-to-Date / Current FY Budget * 100).
+  - **Budget Remaining**: Calculated (Current FY Budget - Year-to-Date), read-only.
+  - **Goal Adjustment**: Editable for surplus or asset targets (adjusted annually).
+  - **Scenario 1-3**: Calculated fields for rate impact analysis.
+  - **% Allocation** (Admin & General only): Editable for shared expense distribution.
+
+## 3. Sanitation District Table (Fully Implemented)
+### Revenues Other Than Property Taxes
+| Account | Label                        | Current FY Budget | Monthly Input | Year-to-Date Spending | % of Budget | Budget Remaining | Goal Adjustment | Scenario 1 | Scenario 2 | Scenario 3 |
+|---------|------------------------------|-------------------|---------------|------------------------|-------------|------------------|-----------------|------------|------------|------------|
+| 311.00  | Specific Ownership Taxes     | $15,500.00        | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Calc]     | [Calc]     | [Calc]     |
+| 301.00  | Sewage Sales                 | $100,000.00       | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Calc]     | [Calc]     | [Calc]     |
+| 310.10  | Delinquent Taxes             | $2,500.00         | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Calc]     | [Calc]     | [Calc]     |
+| 313.00  | Senior Homestead Exemption   | $100.00           | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Calc]     | [Calc]     | [Calc]     |
+| 320.00  | Penalties and Interest...    | $15,000.00        | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Calc]     | [Calc]     | [Calc]     |
+| 321.00  | Misc Income                  | $2,000.00         | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Calc]     | [Calc]     | [Calc]     |
+| 315.00  | Interest on Investments      | $48,500.00        | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Calc]     | [Calc]     | [Calc]     |
+| 322.00  | Grant                        | $0.00             | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Calc]     | [Calc]     | [Calc]     |
+| **Total Operating Income** | | **$183,600.00**   | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Calc]     | [Calc]     | [Calc]     |
+
+### Operating Expenses
+| Account | Label                | Current FY Budget | Monthly Input | Year-to-Date Spending | % of Budget | Budget Remaining | Goal Adjustment | Scenario 1 | Scenario 2 | Scenario 3 |
+|---------|----------------------|-------------------|---------------|------------------------|-------------|------------------|-----------------|------------|------------|------------|
+| 401.00  | Permits and Assessments | $976.00          | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Calc]     | [Calc]     | [Calc]     |
+| 401.10  | Bank Service          | $85.00           | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Calc]     | [Calc]     | [Calc]     |
+| 405.00  | Outside Service...    | $650.00          | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Calc]     | [Calc]     | [Calc]     |
+| 405.10  | Budget, Audit, Legal  | $2,000.00        | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Calc]     | [Calc]     | [Calc]     |
+| 410.00  | Office Supplies...    | $1,000.00        | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Calc]     | [Calc]     | [Calc]     |
+| 413.40  | Education             | $8,325.00        | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Calc]     | [Calc]     | [Calc]     |
+| 415.00  | Capital Outlay        | [Input]          | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Calc]     | [Calc]     | [Calc]     |
+| 416.00  | Dues and Subscriptions| $100.00          | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Calc]     | [Calc]     | [Calc]     |
+| 418.00  | Lift Station Utilities| $15,000.00       | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Calc]     | [Calc]     | [Calc]     |
+| 420.00  | Collection Fee        | $12,000.00       | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Calc]     | [Calc]     | [Calc]     |
+| 425.00  | Supplies and Expenses | $2,000.00        | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Calc]     | [Calc]     | [Calc]     |
+| 430.00  | Insurance             | [Input]          | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Calc]     | [Calc]     | [Calc]     |
+| 432.53  | Sewer Cleaning        | $7,600.00        | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Calc]     | [Calc]     | [Calc]     |
+| 445.00  | Treasurer Fees        | $2,000.00        | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Calc]     | [Calc]     | [Calc]     |
+| 484.00  | Property Taxes        | [Input]          | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Calc]     | [Calc]     | [Calc]     |
+| 486.00  | Equipment Repairs     | $3,000.00        | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Calc]     | [Calc]     | [Calc]     |
+| 489.00  | Pickup Usage Fee      | $2,400.00        | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Calc]     | [Calc]     | [Calc]     |
+| 491.00  | Fuel                  | [Input]          | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Calc]     | [Calc]     | [Calc]     |
+| 491.00  | Misc                  | $500.00          | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Calc]     | [Calc]     | [Calc]     |
+| **Total O & M Expenses** | | **$57,636.00**   | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Calc]     | [Calc]     | [Calc]     |
+
+### Administrative & General Expenses
+| Account | Label                | Current FY Budget | Monthly Input | Year-to-Date Spending | % of Budget | Budget Remaining | Goal Adjustment | % Allocation | Scenario 1 | Scenario 2 | Scenario 3 |
+|---------|----------------------|-------------------|---------------|------------------------|-------------|------------------|-----------------|--------------|------------|------------|------------|
+| 460.00  | Supt Salaries        | $26,000.00        | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Input]      | [Calc]     | [Calc]     | [Calc]     |
+| 460.10  | Clerk Salaries       | $26,000.00        | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Input]      | [Calc]     | [Calc]     | [Calc]     |
+| 460.12  | Part-Time Clerk Salaries | $5,000.00    | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Input]      | [Calc]     | [Calc]     | [Calc]     |
+| 465.00  | Office Supplies/Postage | $3,000.00    | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Input]      | [Calc]     | [Calc]     | [Calc]     |
+| 480.00  | Outside Service-Lab  | $2,000.00        | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Input]      | [Calc]     | [Calc]     | [Calc]     |
+| 480.00  | Insurance: Building/HCL | $1,200.00   | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Input]      | [Calc]     | [Calc]     | [Calc]     |
+| 480.10  | Insurance: Workmans Comp | $1,500.00  | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Input]      | [Calc]     | [Calc]     | [Calc]     |
+| 483.00  | Insurance: Trash Truck | $2,000.00     | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Input]      | [Calc]     | [Calc]     | [Calc]     |
+| 487.00  | Payroll Taxes        | $6,100.00        | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Input]      | [Calc]     | [Calc]     | [Calc]     |
+| 491.00  | Interest             | $1,300.00        | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Input]      | [Calc]     | [Calc]     | [Calc]     |
+| 491.00  | Employee Benefits    | $16,000.00       | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Input]      | [Calc]     | [Calc]     | [Calc]     |
+| **Total Admin & General** | | **$90,100.00**   | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         |              | [Calc]     | [Calc]     | [Calc]     |
+| **Total Expenses** | | **$147,736.00**   | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         |              | [Calc]     | [Calc]     | [Calc]     |
+
+## 4. Placeholder Tables (Water, Trash, Apartments)
+### Water
+| Account | Label       | Current FY Budget | Monthly Input | Year-to-Date Spending | % of Budget | Budget Remaining |
+
+- **Structure**: Separate tables per enterprise (`SanitationDistrict`, `Water`, `Trash`, `Apartments`) and `Summary`, with fields: `Account`, `Label`, `Section`, `CurrentFYBudget`, `MonthlyInput`, `YearToDateSpending`, `PercentOfBudget`, `BudgetRemaining`, `GoalAdjustment`, `Scenario1`, `Scenario2`, `Scenario3`, `PercentAllocation` (Admin only), `EntryDate`, `Total`.
+
+## 8. Scenario Analysis
+- **Scenario 1: New Trash Truck**
+- **Cost**: $350,000, 12-year lifespan.
+- **Annual Need**: $29,166.67 (depreciation) + $2,916.67 (10% maintenance) = $32,083.34/year.
+- **Monthly**: $2,673.61.
+- **Rate Impact**: 2.67% increase on Sewage Sales ($100,000.00), applied annually.
+- **Scenario 2: Reserve Fund**
+- **Goal**: Variable amount (e.g., $50,000) over variable years (e.g., 5 years).
+- **Annual**: $10,000, Monthly: $833.33.
+- **Rate Impact**: 0.83% increase on Sewage Sales, applied annually.
+- **Scenario 3: Grant Repayment**
+- **Assumption**: $100,000 grant, 5 years, 3% interest.
+- **Annual Payment**: $21,907.50, Monthly: $1,825.63.
+- **Rate Impact**: 1.83% increase on Sewage Sales, applied annually.
+- **Flexibility**: Goal Adjustment and % Allocation adjustable at budget time (July annually).
+
+## 9. Visualization Tools
+- **Trend Graph**: Syncfusion ChartControl line chart of % of Budget or Budget Remaining over 12 months.
+- **Crystal Ball Dashboard**: Syncfusion Slider controls for Goal Adjustment, grant amounts, and repayment terms, updating Scenarios live.
+- **Bar Graph**: Syncfusion ChartControl bar graph comparing Year-to-Date vs. Current FY Budget.
+- **Heat Map**: Syncfusion Grid with conditional formatting for Budget Remaining < 10% or % of Budget > 90% in red.
+
+## 10. Export/Report Functions
+- **CSV Export**: Button to export each table to CSV, including all fields.
+- **Sanitation Report**: Syncfusion DataGridView data with a ChartControl line graph of % of Budget, plus Required Rate.
+- **Scenario Report**: Table of Scenario 1-3 with a bar graph comparing Required Rates.
+- **Summary Report**: Aggregated totals with a trend graph and Required Rate per enterprise.
+
+## 11. Validation
+- **Basic Checks**: Non-negative values for `CurrentFYBudget`, `MonthlyInput`, `GoalAdjustment`; required fields.
+- **Alerts**: MessageBox for invalid inputs (e.g., negative numbers).
+
+## 12. Implementation Notes
+- **Audit Readiness**: Monthly inputs reflect actuals for accountant review.
+- **Annual Adjustment**: Rates set in July based on 12-month data.
+- **Placeholders**: Water, Trash, Apartments await account numbers and data.
+- **Expansion**: Structure supports adding enterprises seamlessly.
+
+## 13. Future Enhancements
+- Add account numbers for Water, Trash, Apartments.
+- Refine Scenarios with City Council input.
+- Expand visualizations (e.g., pie charts for expense allocation).
+
+## 14. Next Steps
+1. **Structure Review**: Confirm this layout meets audit, scenario, and reporting needs.
+2. **Account Numbers**: Provide Water, Trash, Apartments accounts.
+3. **Scenario Customization**: Define preset or variable Scenario values.
+4. **Visualization Preference**: Select preferred Syncfusion ChartControl type (e.g., Line, Bar).
+
+Drawing inspiration from a web search on "Colorado Municipal Utilities Rates and Governmental Oversight and Regulations," I’ve identified key practices and regulatory insights from Colorado’s municipal utility landscape that can enhance the Wiley Sanitation District Budget Management Software. These insights, reflecting recent updates and oversight mechanisms, complement the EPA’s guidance and address your needs for seasonal usage and financial sustainability.
+
+### Inspiration from Colorado Municipal Utilities
+1. **Time-of-Use (TOU) Rates**:
+   - **Insight**: Colorado utilities like Xcel Energy and Black Hills implement TOU rates, adjusting costs based on peak (e.g., 5 PM-9 PM) and off-peak hours, with higher summer rates. This reflects seasonal demand (e.g., summer water usage).
+   - **Application**: Add a `TimeOfUseFactor` field to `MonthlyInput` and `Required Rate` calculations, allowing seasonal rate adjustments (e.g., higher summer water rates) to mirror TOU principles, ensuring cost recovery aligns with demand peaks.
+
+2. **Five-Year Rate Planning**:
+   - **Insight**: Colorado Springs Utilities’ 2025-2029 rate case, approved with a $1.8 billion budget, includes long-term infrastructure projects (e.g., $147 million wastewater expansion), balancing rate increases with affordability.
+   - **Application**: Extend the `Goal Adjustment` field to support a five-year forecast, integrating capital costs (e.g., trash truck) into Scenario 1, aligning with annual reviews for rate stability.
+
+3. **Public Oversight and Affordability**:
+   - **Insight**: The Colorado Public Utilities Commission (PUC) ensures just and reasonable rates, with the Office of the Utility Consumer Advocate (UCA) protecting consumers. The 2023 Affordability Initiative addresses high bills post-Winter Storm Uri.
+   - **Application**: Add a `CustomerAffordabilityIndex` to Scenario analysis, calculating rate impacts on low-income users, and include a `PublicComment` field in reports to support PUC-style engagement.
+
+4. **Regulatory Reporting**:
+   - **Insight**: The PUC requires annual energy reports from utilities, and Colorado Springs Utilities adjusts fuel rates quarterly, ensuring transparency.
+   - **Application**: Enhance the `Export/Report Functions` with a `QuarterlySummaryReport`, tracking seasonal trends (e.g., Christmas trash spikes) and aligning with PUC reporting standards.
+
+5. **Municipal Autonomy**:
+   - **Insight**: Municipal utilities (15% of Colorado’s 2015 electricity sales) set rates to cover costs, governed by City Councils, with flexibility in electricity sourcing.
+   - **Application**: Design the software for local control, allowing the City Council to adjust `PercentAllocation` and `Goal Adjustment` annually, reflecting municipal decision-making.
+
+### Integration with EPA Guidance
+- **Seasonal Alignment**: The EPA’s usage-based rate design (Step 5) pairs with TOU inspiration, enhancing `MonthlyUsage` to reflect seasonal patterns (e.g., 20% water increase in summer).
+- **Long-Term Planning**: EPA’s Step 1 (costs) and Step 4 (revenue needs) support the five-year rate case approach, ensuring infrastructure funding (e.g., wastewater projects).
+- **Affordability and Review**: EPA’s Step 7 (review) and affordability focus align with PUC oversight, reinforcing the `CustomerAffordabilityIndex` and trend graphs.
+
+### Updated Project Adjustments
+- **Database Schema**: Add `TimeOfUseFactor` (DECIMAL(5,2)), `CustomerAffordabilityIndex` (DECIMAL(5,2)), and `QuarterlySummary` (DATETIME) fields to enterprise tables.
+- **UI**: Update the Sanitation District form with `TimeOfUseFactor` and `CustomerAffordabilityIndex` inputs, and a `QuarterlySummary` toggle.
+- **Reports**: Include a `QuarterlySummaryReport` with seasonal trend graphs and a `Required Rate` adjusted for TOU and affordability.
+- **Injection Point**: Update the comment to include new fields:
+  ```
+  // INJECT: SQL Server Schema Setup Here
+  // Example: Create tables for SanitationDistrict, Water, Trash, Apartments, and Summary
+  // Include fields: Account, Label, Section, CurrentFYBudget, SeasonalAdjustment, MonthlyInput, 
+  // SeasonalRevenueFactor, YearToDateSpending, PercentOfBudget, BudgetRemaining, GoalAdjustment, 
+  // ReserveTarget, Scenario1, Scenario2, Scenario3, PercentAllocation (Admin only), Required Rate, 
+  // MonthlyUsage, TimeOfUseFactor, CustomerAffordabilityIndex, QuarterlySummary, EntryDate, Total
+  // To be implemented when SQL Server Express is set up.
+  ```
+
+### Enhanced Sanitation District Form
+#### Combined Income and Expenses Page
+| Account | Label                        | Section         | Current FY Budget | SeasonalAdjustment | Monthly Input | SeasonalRevenueFactor | Year-to-Date Spending | % of Budget | Budget Remaining | Goal Adjustment | ReserveTarget | TimeOfUseFactor | CustomerAffordabilityIndex | Scenario 1 | Scenario 2 | Scenario 3 | Required Rate | MonthlyUsage |
+|---------|------------------------------|-----------------|-------------------|---------------------|---------------|-----------------------|------------------------|-------------|------------------|-----------------|---------------|-----------------|----------------------------|------------|------------|------------|---------------|--------------|
+| 311.00  | Specific Ownership Taxes     | Revenue         | [Input]           | [Input]             | [Input]       | [Input]               | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Input]       | [Input]         | [Input]                    | [Calc]     | [Calc]     | [Calc]     | [Calc]        | [Input]      |
+| 301.00  | Sewage Sales                 | Revenue         | [Input]           | [Input]             | [Input]       | [Input]               | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Input]       | [Input]         | [Input]                    | [Calc]     | [Calc]     | [Calc]     | [Calc]        | [Input]      |
+| 310.10  | Delinquent Taxes             | Revenue         | [Input]           | [Input]             | [Input]       | [Input]               | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Input]       | [Input]         | [Input]                    | [Calc]     | [Calc]     | [Calc]     | [Calc]        | [Input]      |
+| 313.00  | Senior Homestead Exemption   | Revenue         | [Input]           | [Input]             | [Input]       | [Input]               | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Input]       | [Input]         | [Input]                    | [Calc]     | [Calc]     | [Calc]     | [Calc]        | [Input]      |
+| 320.00  | Penalties and Interest...    | Revenue         | [Input]           | [Input]             | [Input]       | [Input]               | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Input]       | [Input]         | [Input]                    | [Calc]     | [Calc]     | [Calc]     | [Calc]        | [Input]      |
+| 321.00  | Misc Income                  | Revenue         | [Input]           | [Input]             | [Input]       | [Input]               | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Input]       | [Input]         | [Input]                    | [Calc]     | [Calc]     | [Calc]     | [Calc]        | [Input]      |
+| 315.00  | Interest on Investments      | Revenue         | [Input]           | [Input]             | [Input]       | [Input]               | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Input]       | [Input]         | [Input]                    | [Calc]     | [Calc]     | [Calc]     | [Calc]        | [Input]      |
+| 322.00  | Grant                        | Revenue         | [Input]           | [Input]             | [Input]       | [Input]               | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Input]       | [Input]         | [Input]                    | [Calc]     | [Calc]     | [Calc]     | [Calc]        | [Input]      |
+| **Total Operating Income** | | Revenue         | [Input]           | [Input]             | [Input]       | [Input]               | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Input]       | [Input]         | [Input]                    | [Calc]     | [Calc]     | [Calc]     | [Calc]        | [Input]      |
+| 401.00  | Permits and Assessments     | Operating       | [Input]           | [Input]             | [Input]       | [Input]               | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Input]       | [Input]         | [Input]                    | [Calc]     | [Calc]     | [Calc]     | [Calc]        | [Input]      |
+| 401.10  | Bank Service                | Operating       | [Input]           | [Input]             | [Input]       | [Input]               | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Input]       | [Input]         | [Input]                    | [Calc]     | [Calc]     | [Calc]     | [Calc]        | [Input]      |
+| 405.00  | Outside Service Lab Fees    | Operating       | [Input]           | [Input]             | [Input]       | [Input]               | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Input]       | [Input]         | [Input]                    | [Calc]     | [Calc]     | [Calc]     | [Calc]        | [Input]      |
+| 405.10  | Budget, Audit, Legal        | Operating       | [Input]           | [Input]             | [Input]       | [Input]               | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Input]       | [Input]         | [Input]                    | [Calc]     | [Calc]     | [Calc]     | [Calc]        | [Input]      |
+| 410.00  | Office Supplies / Postage   | Operating       | [Input]           | [Input]             | [Input]       | [Input]               | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Input]       | [Input]         | [Input]                    | [Calc]     | [Calc]     | [Calc]     | [Calc]        | [Input]      |
+| 413.40  | Education                   | Operating       | [Input]           | [Input]             | [Input]       | [Input]               | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Input]       | [Input]         | [Input]                    | [Calc]     | [Calc]     | [Calc]     | [Calc]        | [Input]      |
+| 415.00  | Capital Outlay              | Operating       | [Input]           | [Input]             | [Input]       | [Input]               | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Input]       | [Input]         | [Input]                    | [Calc]     | [Calc]     | [Calc]     | [Calc]        | [Input]      |
+| 416.00  | Dues and Subscriptions      | Operating       | [Input]           | [Input]             | [Input]       | [Input]               | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Input]       | [Input]         | [Input]                    | [Calc]     | [Calc]     | [Calc]     | [Calc]        | [Input]      |
+| 418.00  | Lift Station Utilities      | Operating       | [Input]           | [Input]             | [Input]       | [Input]               | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Input]       | [Input]         | [Input]                    | [Calc]     | [Calc]     | [Calc]     | [Calc]        | [Input]      |
+| 420.00  | Collection Fee              | Operating       | [Input]           | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Calc]     | [Calc]     | [Calc]     | [Calc]        | [Input]      |
+| 425.00  | Supplies and Expenses       | Operating       | [Input]           | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Calc]     | [Calc]     | [Calc]     | [Calc]        | [Input]      |
+| 430.00  | Insurance                   | Operating       | [Input]           | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Calc]     | [Calc]     | [Calc]     | [Calc]        | [Input]      |
+| 432.53  | Sewer Cleaning              | Operating       | [Input]           | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Calc]     | [Calc]     | [Calc]     | [Calc]        | [Input]      |
+| 445.00  | Treasurer Fees              | Operating       | [Input]           | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Calc]     | [Calc]     | [Calc]     | [Calc]        | [Input]      |
+| 484.00  | Property Taxes              | Operating       | [Input]           | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Calc]     | [Calc]     | [Calc]     | [Calc]        | [Input]      |
+| 486.00  | Equipment Repairs           | Operating       | [Input]           | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Calc]     | [Calc]     | [Calc]     | [Calc]        | [Input]      |
+| 489.00  | Pickup Usage Fee            | Operating       | [Input]           | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Calc]     | [Calc]     | [Calc]     | [Calc]        | [Input]      |
+| 491.00  | Fuel                        | Operating       | [Input]           | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Calc]     | [Calc]     | [Calc]     | [Calc]        | [Input]      |
+| 491.00  | Misc                        | Operating       | [Input]           | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Calc]     | [Calc]     | [Calc]     | [Calc]        | [Input]      |
+| **Total Operating Expenses** | | Operating       | [Input]           | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Calc]     | [Calc]     | [Calc]     | [Calc]        | [Input]      |
+| 460.00  | Supt Salaries               | Admin           | [Input]           | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Calc]     | [Calc]     | [Calc]     | [Calc]        | [Input]      |
+| 460.10  | Clerk Salaries              | Admin           | [Input]           | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Calc]     | [Calc]     | [Calc]     | [Calc]        | [Input]      |
+| 460.12  | Part-Time Clerk Salaries    | Admin           | [Input]           | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Calc]     | [Calc]     | [Calc]     | [Calc]        | [Input]      |
+| 465.00  | Office Supplies/Postage     | Admin           | [Input]           | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Calc]     | [Calc]     | [Calc]     | [Calc]        | [Input]      |
+| 480.00  | Outside Service-Lab         | Admin           | [Input]           | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Calc]     | [Calc]     | [Calc]     | [Calc]        | [Input]      |
+| 480.00  | Insurance: Building/HCL     | Admin           | [Input]           | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Calc]     | [Calc]     | [Calc]     | [Calc]        | [Input]      |
+| 480.10  | Insurance: Workmans Comp    | Admin           | [Input]           | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Calc]     | [Calc]     | [Calc]     | [Calc]        | [Input]      |
+| 483.00  | Insurance: Trash Truck      | Admin           | [Input]           | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Calc]     | [Calc]     | [Calc]     | [Calc]        | [Input]      |
+| 487.00  | Payroll Taxes               | Admin           | [Input]           | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Calc]     | [Calc]     | [Calc]     | [Calc]        | [Input]      |
+| 491.00  | Interest                    | Admin           | [Input]           | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Calc]     | [Calc]     | [Calc]     | [Calc]        | [Input]      |
+| 491.00  | Employee Benefits           | Admin           | [Input]           | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Calc]     | [Calc]     | [Calc]     | [Calc]        | [Input]      |
+| **Total Admin Expenses** | | Admin           | [Input]           | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Calc]     | [Calc]     | [Calc]     | [Calc]        | [Input]      |
+| **Total Expenses** | |                  | [Input]           | [Input]       | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Calc]     | [Calc]     | [Calc]     | [Calc]        | [Input]      |
+
+## 4. Placeholder Tables (Water, Trash, Apartments)
+### Water (Form: `WaterInput`)
+| Account | Label       | Section | Current FY Budget | SeasonalAdjustment | Monthly Input | SeasonalRevenueFactor | Year-to-Date Spending | % of Budget | Budget Remaining | Goal Adjustment | ReserveTarget | TimeOfUseFactor | CustomerAffordabilityIndex | Scenario 1 | Scenario 2 | Scenario 3 | Required Rate | MonthlyUsage |
+|---------|-------------|---------|-------------------|---------------------|---------------|-----------------------|------------------------|-------------|------------------|-----------------|---------------|-----------------|----------------------------|------------|------------|------------|---------------|--------------|
+| [Input] | [Input]     | [Input] | [Input]           | [Input]             | [Input]       | [Input]               | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Input]       | [Input]         | [Input]                    | [Calc]     | [Calc]     | [Calc]     | [Calc]        | [Input]      |
+| ...     | ...         | ...     | ...               | ...                 | ...           | ...                   | ...                    | ...         | ...              | ...             | ...           | ...             | ...                        | ...        | ...        | ...        | ...           | ...          |
+
+### Trash (Form: `TrashInput`)
+| Account | Label       | Section | Current FY Budget | SeasonalAdjustment | Monthly Input | SeasonalRevenueFactor | Year-to-Date Spending | % of Budget | Budget Remaining | Goal Adjustment | ReserveTarget | TimeOfUseFactor | CustomerAffordabilityIndex | Scenario 1 | Scenario 2 | Scenario 3 | Required Rate | MonthlyUsage |
+|---------|-------------|---------|-------------------|---------------------|---------------|-----------------------|------------------------|-------------|------------------|-----------------|---------------|-----------------|----------------------------|------------|------------|------------|---------------|--------------|
+| [Input] | [Input]     | [Input] | [Input]           | [Input]             | [Input]       | [Input]               | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Input]       | [Input]         | [Input]                    | [Calc]     | [Calc]     | [Calc]     | [Calc]        | [Input]      |
+| ...     | ...         | ...     | ...               | ...                 | ...           | ...                   | ...                    | ...         | ...              | ...             | ...           | ...             | ...                        | ...        | ...        | ...        | ...           | ...          |
+
+### Apartments (Form: `ApartmentsInput`)
+| Account | Label       | Section | Current FY Budget | SeasonalAdjustment | Monthly Input | SeasonalRevenueFactor | Year-to-Date Spending | % of Budget | Budget Remaining | Goal Adjustment | ReserveTarget | TimeOfUseFactor | CustomerAffordabilityIndex | Scenario 1 | Scenario 2 | Scenario 3 | Required Rate | MonthlyUsage |
+|---------|-------------|---------|-------------------|---------------------|---------------|-----------------------|------------------------|-------------|------------------|-----------------|---------------|-----------------|----------------------------|------------|------------|------------|---------------|--------------|
+| [Input] | [Input]     | [Input] | [Input]           | [Input]             | [Input]       | [Input]               | [Calculated]           | [Calculated]| [Read-only]      | [Input]         | [Input]       | [Input]         | [Input]                    | [Calc]     | [Calc]     | [Calc]     | [Calc]        | [Input]      |
+| ...     | ...         | ...     | ...               | ...                 | ...           | ...                   | ...                    | ...         | ...              | ...             | ...           | ...             | ...                        | ...        | ...        | ...        | ...           | ...          |
+
+## 5. Combined Summary Page (Form: `SummaryPage`)
+| Enterprise    | Total Operating Income | Total O & M Expenses | Total Admin Expenses | Net Surplus/Deficit | % of Total Budget | Trend Graph | Required Rate |
+|---------------|-------------------------|----------------------|-----------------------|---------------------|-------------------|-------------|---------------|
+| Sanitation    | [Calculated]            | [Calculated]         | [Calculated]          | [Calculated]        | [Calculated]      | [Graph]     | [Calc]        |
+| Water         | [Input]                 | [Input]              | [Input]               | [Calculated]        | [Calculated]      | [Graph]     | [Calc]        |
+| Trash         | [Input]                 | [Input]              | [Input]               | [Calculated]        | [Calculated]      | [Graph]     | [Calc]        |
+| Apartments    | [Input]                 | [Input]              | [Input]               | [Calculated]        | [Calculated]      | [Graph]     | [Calc]        |
+| **Town Total**| [Calculated]            | [Calculated]         | [Calculated]          | [Calculated]        | [Calculated]      | [Graph]     | [Calc]        |
+
+## 6. Implementation Environment
+- **Platform**: Windows Forms application.
+- **Development Tools**: Visual Studio Code (VS Code) with Visual Studio for Forms design, Syncfusion controls via NuGet, Windows Forms controls as fallback.
+- **Language/Framework**: C# with .NET Framework (e.g., .NET 4.8).
+- **Database**: Microsoft SQL Server Express, local instance, single-user, with injection point for future schema setup.
+- **UI**: Syncfusion DataGridView for tables, ChartControl for graphs, Windows Forms controls for inputs.
+
+## 7. Database Schema Injection Point
+- **Placeholder**: SQL script creation deferred.
+- **Injection Point**: In the main program file (e.g., `Program.cs`), add:
+  ```
+  // INJECT: SQL Server Schema Setup Here
+  // Example: Create tables for SanitationDistrict, Water, Trash, Apartments, and Summary
+  // Include fields: Account, Label, Section, CurrentFYBudget, SeasonalAdjustment, MonthlyInput, 
+  // SeasonalRevenueFactor, YearToDateSpending, PercentOfBudget, BudgetRemaining, GoalAdjustment, 
+  // ReserveTarget, Scenario1, Scenario2, Scenario3, PercentAllocation (Admin only), Required Rate, 
+  // MonthlyUsage, TimeOfUseFactor, CustomerAffordabilityIndex, QuarterlySummary, EntryDate, Total
+  // To be implemented when SQL Server Express is set up.
+  ```
+- **Structure**: Separate tables per enterprise (`SanitationDistrict`, `Water`, `Trash`, `Apartments`) and `Summary`.
+
+## 8. Scenario Analysis
+- **Scenario 1: New Trash Truck**
+  - **Cost**: $350,000, 12-year lifespan.
+  - **Annual Need**: $29,166.67 (depreciation) + $2,916.67 (10% maintenance) = $32,083.34/year.
+  - **Monthly**: $2,673.61.
+  - **Rate Impact**: 2.67% increase on Sewage Sales ($100,000.00), applied annually, adjusted for seasonal usage.
+- **Scenario 2: Reserve Fund**
+  - **Goal**: Variable amount (e.g., $50,000) over variable years (e.g., 5 years).
+  - **Annual**: $10,000, Monthly: $833.33.
+  - **Rate Impact**: 0.83% increase on Sewage Sales, applied annually, with seasonal reserve adjustments.
+- **Scenario 3: Grant Repayment**
+  - **Assumption**: $100,000 grant, 5 years, 3% interest.
+  - **Annual Payment**: $21,907.50, Monthly: $1,825.63.
+  - **Rate Impact**: 1.83% increase on Sewage Sales, applied annually, with seasonal repayment planning.
+- **Flexibility**: Goal Adjustment and % Allocation adjustable at budget time (July annually).
+
+## 9. Visualization Tools
+- **Trend Graph**: Syncfusion ChartControl line chart of % of Budget or Budget Remaining over 12 months, reflecting seasonal patterns.
+- **Crystal Ball Dashboard**: Syncfusion Slider controls for Goal Adjustment, grant amounts, and repayment terms, updating Scenarios live with seasonal factors.
+- **Bar Graph**: Syncfusion ChartControl bar graph comparing Year-to-Date vs. Current FY Budget, highlighting seasonal variance.
+- **Heat Map**: Syncfusion Grid with conditional formatting for Budget Remaining < 10% or % of Budget > 90% in red.
+
+## 10. Export/Report Functions
+- **CSV Export**: Button to export each table to CSV, including all fields.
+- **Sanitation Report**: Syncfusion DataGridView data with a ChartControl line graph of % of Budget, plus Required Rate and seasonal trends.
+- **Scenario Report**: Table of Scenario 1-3 with a bar graph comparing Required Rates, adjusted for seasonal factors.
+- **Summary Report**: Aggregated totals with a trend graph, Required Rate per enterprise, and seasonal impact analysis.
+
+## 11. Validation
+- **Basic Checks**: Non-negative values for `CurrentFYBudget`, `SeasonalAdjustment`, `MonthlyInput`, `SeasonalRevenueFactor`, `GoalAdjustment`, `ReserveTarget`, `TimeOfUseFactor`, `CustomerAffordabilityIndex`, `MonthlyUsage`; required fields.
+- **Alerts**: MessageBox for invalid inputs (e.g., negative numbers).
+
+## 12. Implementation Notes
+- **Audit Readiness**: Monthly inputs with seasonal factors reflect actuals for accountant review.
+- **Annual Adjustment**: Rates set in July based on 12-month data with seasonal adjustments.
+- **Placeholders**: Water, Trash, Apartments await account numbers and data.
+- **Expansion**: Structure supports adding enterprises seamlessly.
+
+## 13. Future Enhancements
+- Add account numbers for Water, Trash, Apartments.
+- Refine Scenarios with City Council input, incorporating seasonal forecasts.
+- Expand visualizations (e.g., pie charts for seasonal expense allocation).
+
+## 14. Next Steps
+1. **Structure Review**: Confirm this layout meets audit, scenario, seasonal, and reporting needs.
+2. **Account Numbers**: Provide Water, Trash, Apartments accounts.
+3. **Scenario Customization**: Define preset or variable Scenario values with seasonal adjustments.
+4. **Visualization Preference**: Select preferred Syncfusion ChartControl type (e.g., Line, Bar) for seasonal trends.
+```
+
+### Instructions
+- Copy this text into `Rate Study Methodology.txt`.
+- Save it to update your record with the latest seasonal and EPA-aligned enhancements.
+
+This update ensures the software addresses seasonal usage, aligning with EPA guidance and Colorado municipal practices, while supporting your financial goals. Let me know your next steps!
