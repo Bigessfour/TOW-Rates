@@ -13,7 +13,10 @@
     <PackageReference Include="LiveChartsCore.SkiaSharpView.WinForms" Version="2.0.0-rc5.4" />
     <PackageReference Include="Syncfusion.SfDataGrid.WinForms" Version="26.1.42" />
     <PackageReference Include="Syncfusion.Tools.Windows" Version="26.1.42" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.8.6" />
     <Compile Include="..\Models\SanitationDistrict.cs" />
+    <Compile Include="..\Database\DatabaseManager.cs" />
+    <Compile Include="..\Database\SanitationRepository.cs" />
     <Compile Include="..\Forms\MainForm.cs" />
     <Compile Include="..\Forms\MockSanitationData.cs" />
     <Compile Include="..\Forms\DashboardForm.cs" />
