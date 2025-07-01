@@ -17,8 +17,11 @@
     <Compile Include="..\Forms\DashboardForm.cs" />
     <Compile Include="..\Forms\DashboardForm.Designer.cs" />
     <Compile Include="..\Forms\WaterInput.cs" />
+    <Compile Include="..\Forms\WaterInput.Designer.cs" />
     <Compile Include="..\Forms\ApartmentsInput.cs" />
+    <Compile Include="..\Forms\ApartmentsInput.Designer.cs" />
     <Compile Include="..\Forms\TrashInput.cs" />
+    <Compile Include="..\Forms\TrashInput.Designer.cs" />
     <Compile Include="..\Forms\SummaryPage.cs" />
     <Compile Include="..\Forms\SummaryPage.Designer.cs" />
   </ItemGroup>

@@ -21,9 +21,9 @@ namespace WileyBudgetManagement.Forms
                     Name = "Current FY Budget"
                 }
             };
-            chartSummary.XAxes = new[]
+            chartSummary.XAxes = new LiveChartsCore.SkiaSharpView.Axis[]
             {
-                new LiveChartsCore.SkiaSharpView.WinForms.Axis
+                new LiveChartsCore.SkiaSharpView.Axis
                 {
                     Labels = data.ConvertAll(d => d.Label)
                 }
