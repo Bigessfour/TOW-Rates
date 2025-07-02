@@ -391,7 +391,7 @@ namespace WileyBudgetManagement.Forms
                         return CreateEnterpriseContext("All Enterprises", combined);
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // Return basic context on error
                 return new EnterpriseContext
@@ -415,7 +415,7 @@ namespace WileyBudgetManagement.Forms
                 enterprises.Add(await GetEnterpriseData("Trash & Recycling"));
                 enterprises.Add(await GetEnterpriseData("Apartments"));
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // Add minimal context on error
                 enterprises.Add(new EnterpriseContext { Name = "Municipal System", Scope = "Error loading data" });

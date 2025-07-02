@@ -225,60 +225,102 @@ namespace WileyBudgetManagement.Database
 
         private async Task SeedTrashDataAsync(SqlConnection connection)
         {
+            // Execute comprehensive Trash data population script
+            string scriptPath = Path.Combine(Directory.GetCurrentDirectory(), "Database", "PopulateTrashData.sql");
+            
+            if (File.Exists(scriptPath))
+            {
+                string scriptContent = await File.ReadAllTextAsync(scriptPath);
+                
+                // Split the script into individual commands (by GO statements)
+                var commands = scriptContent.Split(new[] { "GO" }, StringSplitOptions.RemoveEmptyEntries);
+                
+                foreach (string commandText in commands)
+                {
+                    string trimmedCommand = commandText.Trim();
+                    if (!string.IsNullOrEmpty(trimmedCommand) && !trimmedCommand.StartsWith("--") && !trimmedCommand.StartsWith("PRINT"))
+                    {
+                        try
+                        {
+                            using var command = new SqlCommand(trimmedCommand, connection);
+                            command.CommandTimeout = 300; // 5 minutes timeout for complex operations
+                            await command.ExecuteNonQueryAsync();
+                        }
+                        catch (Exception ex)
+                        {
+                            // Log but continue with next command
+                            Console.WriteLine($"Warning: Error executing Trash data command: {ex.Message}");
+                        }
+                    }
+                }
+            }
+            else
+            {
+                // Fallback to basic Trash data if script file not found
+                await SeedBasicTrashDataAsync(connection);
+            }
+        }
+
+        private async Task SeedBasicTrashDataAsync(SqlConnection connection)
+        {
             string insertQuery = @"
-                INSERT INTO Trash (Account, Label, Section, CurrentFYBudget, MonthlyInput, YearToDateSpending, PercentOfBudget, BudgetRemaining, SeasonalAdjustment, RequiredRate)
+                INSERT INTO Trash (Account, Label, Section, CurrentFYBudget, MonthlyInput, YearToDateSpending, PercentOfBudget, BudgetRemaining, SeasonalAdjustment, RequiredRate, EntryDate, MonthlyUsage, TimeOfUseFactor, CustomerAffordabilityIndex)
                 VALUES 
-                (@Account1, @Label1, @Section1, @Budget1, @Monthly1, @YTD1, @Percent1, @Remaining1, @Seasonal1, @Rate1),
-                (@Account2, @Label2, @Section2, @Budget2, @Monthly2, @YTD2, @Percent2, @Remaining2, @Seasonal2, @Rate2),
-                (@Account3, @Label3, @Section3, @Budget3, @Monthly3, @YTD3, @Percent3, @Remaining3, @Seasonal3, @Rate3),
-                (@Account4, @Label4, @Section4, @Budget4, @Monthly4, @YTD4, @Percent4, @Remaining4, @Seasonal4, @Rate4)";
+                (@Account1, @Label1, @Section1, @Budget1, @Monthly1, @YTD1, @Percent1, @Remaining1, @Seasonal1, @Rate1, GETDATE(), @Usage1, 1.0, 1.0),
+                (@Account2, @Label2, @Section2, @Budget2, @Monthly2, @YTD2, @Percent2, @Remaining2, @Seasonal2, @Rate2, GETDATE(), @Usage2, 1.0, 1.0),
+                (@Account3, @Label3, @Section3, @Budget3, @Monthly3, @YTD3, @Percent3, @Remaining3, @Seasonal3, @Rate3, GETDATE(), @Usage3, 1.0, 1.0),
+                (@Account4, @Label4, @Section4, @Budget4, @Monthly4, @YTD4, @Percent4, @Remaining4, @Seasonal4, @Rate4, GETDATE(), @Usage4, 1.0, 1.0)";
 
             using var command = new SqlCommand(insertQuery, connection);
 
-            // Trash data parameters
-            command.Parameters.AddWithValue("@Account1", "T001");
-            command.Parameters.AddWithValue("@Label1", "Residential Trash Collection");
-            command.Parameters.AddWithValue("@Section1", "Collections");
+            // Enhanced Trash data parameters
+            command.Parameters.AddWithValue("@Account1", "T301.00");
+            command.Parameters.AddWithValue("@Label1", "Residential Trash Collection Fees");
+            command.Parameters.AddWithValue("@Section1", "Revenue");
             command.Parameters.AddWithValue("@Budget1", 320000);
             command.Parameters.AddWithValue("@Monthly1", 26666.67m);
-            command.Parameters.AddWithValue("@YTD1", 160000);
-            command.Parameters.AddWithValue("@Percent1", 0.50m);
-            command.Parameters.AddWithValue("@Remaining1", 160000);
-            command.Parameters.AddWithValue("@Seasonal1", 5000);
-            command.Parameters.AddWithValue("@Rate1", 22.50m);
+            command.Parameters.AddWithValue("@YTD1", 185333.34m);
+            command.Parameters.AddWithValue("@Percent1", 0.58m);
+            command.Parameters.AddWithValue("@Remaining1", 134666.66m);
+            command.Parameters.AddWithValue("@Seasonal1", 8000);
+            command.Parameters.AddWithValue("@Rate1", 20.88m);
+            command.Parameters.AddWithValue("@Usage1", 850);
 
-            command.Parameters.AddWithValue("@Account2", "T002");
-            command.Parameters.AddWithValue("@Label2", "Commercial Trash Collection");
+            command.Parameters.AddWithValue("@Account2", "T401.00");
+            command.Parameters.AddWithValue("@Label2", "Collection Route Operations");
             command.Parameters.AddWithValue("@Section2", "Collections");
             command.Parameters.AddWithValue("@Budget2", 180000);
             command.Parameters.AddWithValue("@Monthly2", 15000);
-            command.Parameters.AddWithValue("@YTD2", 90000);
-            command.Parameters.AddWithValue("@Percent2", 0.50m);
-            command.Parameters.AddWithValue("@Remaining2", 90000);
-            command.Parameters.AddWithValue("@Seasonal2", 2500);
-            command.Parameters.AddWithValue("@Rate2", 45.00m);
+            command.Parameters.AddWithValue("@YTD2", 105000);
+            command.Parameters.AddWithValue("@Percent2", 0.58m);
+            command.Parameters.AddWithValue("@Remaining2", 75000);
+            command.Parameters.AddWithValue("@Seasonal2", 3000);
+            command.Parameters.AddWithValue("@Rate2", 21.18m);
+            command.Parameters.AddWithValue("@Usage2", 0);
 
-            command.Parameters.AddWithValue("@Account3", "T003");
-            command.Parameters.AddWithValue("@Label3", "Recycling Program");
+            command.Parameters.AddWithValue("@Account3", "T501.00");
+            command.Parameters.AddWithValue("@Label3", "Recycling Collection");
             command.Parameters.AddWithValue("@Section3", "Recycling");
-            command.Parameters.AddWithValue("@Budget3", 95000);
-            command.Parameters.AddWithValue("@Monthly3", 7916.67m);
-            command.Parameters.AddWithValue("@YTD3", 47500);
-            command.Parameters.AddWithValue("@Percent3", 0.50m);
-            command.Parameters.AddWithValue("@Remaining3", 47500);
-            command.Parameters.AddWithValue("@Seasonal3", 1500);
-            command.Parameters.AddWithValue("@Rate3", 8.75m);
+            command.Parameters.AddWithValue("@Budget3", 45000);
+            command.Parameters.AddWithValue("@Monthly3", 3750);
+            command.Parameters.AddWithValue("@YTD3", 26250);
+            command.Parameters.AddWithValue("@Percent3", 0.58m);
+            command.Parameters.AddWithValue("@Remaining3", 18750);
+            command.Parameters.AddWithValue("@Seasonal3", 1000);
+            command.Parameters.AddWithValue("@Rate3", 5.29m);
+            command.Parameters.AddWithValue("@Usage3", 125);
 
-            command.Parameters.AddWithValue("@Account4", "T004");
-            command.Parameters.AddWithValue("@Label4", "Landfill Operations");
-            command.Parameters.AddWithValue("@Section4", "Operations");
-            command.Parameters.AddWithValue("@Budget4", 125000);
-            command.Parameters.AddWithValue("@Monthly4", 10416.67m);
-            command.Parameters.AddWithValue("@YTD4", 62500);
-            command.Parameters.AddWithValue("@Percent4", 0.50m);
-            command.Parameters.AddWithValue("@Remaining4", 62500);
-            command.Parameters.AddWithValue("@Seasonal4", 3000);
-            command.Parameters.AddWithValue("@Rate4", 15.25m);
+            command.Parameters.AddWithValue("@Account4", "T600.00");
+            command.Parameters.AddWithValue("@Label4", "Trash Collection Vehicles");
+            command.Parameters.AddWithValue("@Section4", "Equipment");
+            command.Parameters.AddWithValue("@Budget4", 50000);
+            command.Parameters.AddWithValue("@Monthly4", 4166.67m);
+            command.Parameters.AddWithValue("@YTD4", 29166.67m);
+            command.Parameters.AddWithValue("@Percent4", 0.58m);
+            command.Parameters.AddWithValue("@Remaining4", 20833.33m);
+            command.Parameters.AddWithValue("@Seasonal4", 0);
+            command.Parameters.AddWithValue("@Rate4", 17.65m);
+            command.Parameters.AddWithValue("@Usage4", 0);
 
             await command.ExecuteNonQueryAsync();
         }

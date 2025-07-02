@@ -13,7 +13,7 @@ namespace WileyBudgetManagement.Documentation
         /// <summary>
         /// Main entry point for system status demonstration
         /// </summary>
-        public static void Main(string[] args)
+        public static void RunDemo(string[] args)
         {
             Console.WriteLine("=== TOWN OF WILEY BUDGET MANAGEMENT SYSTEM ===");
             Console.WriteLine("=== COMPREHENSIVE SYSTEM STATUS REPORT ===");
@@ -23,7 +23,7 @@ namespace WileyBudgetManagement.Documentation
             try
             {
                 // Get comprehensive system status
-                var systemStatus = AccountLibrary.GetSystemImplementationStatus();
+                var systemStatus = WileyBudgetManagement.Resources.AccountLibrary.GetSystemImplementationStatus();
                 
                 DisplaySystemOverview(systemStatus);
                 DisplayEnterpriseStatuses(systemStatus);
