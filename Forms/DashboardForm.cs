@@ -37,6 +37,10 @@ namespace WileyBudgetManagement.Forms
             _repository = new SanitationRepository(_databaseManager);
 
             InitializeComponent();
+            
+            // Apply modern UI enhancements
+            this.ApplyModernStyling();
+            
             InitializeDashboard();
             LoadSummaryData();
         }
@@ -124,17 +128,16 @@ namespace WileyBudgetManagement.Forms
             {
                 Text = text,
                 Size = new Size(220, 40),
-                FlatStyle = FlatStyle.Flat,
-                BackColor = Color.FromArgb(62, 62, 66),
-                ForeColor = Color.White,
-                Font = new Font("Segoe UI", 10),
-                TextAlign = ContentAlignment.MiddleLeft,
                 Cursor = Cursors.Hand
             };
 
-            button.FlatAppearance.BorderSize = 0;
-            button.FlatAppearance.MouseOverBackColor = Color.FromArgb(0, 122, 204);
-            button.FlatAppearance.MouseDownBackColor = Color.FromArgb(0, 100, 180);
+            // Apply modern styling using UIStyleManager
+            UIStyleManager.ApplySecondaryButtonStyle(button);
+            button.FlatAppearance.MouseOverBackColor = UIStyleManager.PrimaryBlue;
+            button.FlatAppearance.MouseDownBackColor = UIStyleManager.PrimaryBlueDark;
+            button.TextAlign = ContentAlignment.MiddleLeft;
+            button.ForeColor = Color.White;
+            button.BackColor = Color.FromArgb(62, 62, 66);
 
             button.Click += (sender, e) => action();
 
@@ -269,16 +272,19 @@ namespace WileyBudgetManagement.Forms
             var card = new Panel
             {
                 Size = new Size(200, 120),
-                BackColor = Color.FromArgb(0, 122, 204),
+                BackColor = UIStyleManager.Surface,
                 Margin = new Padding(5),
                 Padding = new Padding(15)
             };
 
+            // Apply modern card styling
+            UIStyleManager.ApplyCardPanelStyle(card);
+
             var titleLabel = new Label
             {
                 Text = title,
-                Font = new Font("Segoe UI", 10, FontStyle.Bold),
-                ForeColor = Color.White,
+                Font = UIStyleManager.SectionFont,
+                ForeColor = UIStyleManager.NeutralMedium,
                 Dock = DockStyle.Top,
                 Height = 30
             };
@@ -286,8 +292,8 @@ namespace WileyBudgetManagement.Forms
             var valueLabel = new Label
             {
                 Text = value,
-                Font = new Font("Segoe UI", 16, FontStyle.Bold),
-                ForeColor = Color.White,
+                Font = new Font(UIStyleManager.PrimaryFontFamily, 16, FontStyle.Bold),
+                ForeColor = UIStyleManager.PrimaryBlue,
                 Dock = DockStyle.Fill,
                 TextAlign = ContentAlignment.MiddleCenter
             };

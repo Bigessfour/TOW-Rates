@@ -337,8 +337,6 @@ namespace WileyBudgetManagement.Forms
         {
             try
             {
-                if (WATER_CUSTOMER_BASE <= 0) return 0;
-
                 decimal calculatedRate = 0;
 
                 switch (district.Section?.ToUpper())

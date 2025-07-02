@@ -14,21 +14,21 @@ namespace WileyBudgetManagement.Forms
     public partial class ResourcesForm : Form
     {
         // UI Controls
-        private TabControl mainTabControl;
-        private DataGridView accountLibraryGrid;
-        private ComboBox categoryFilter;
-        private ComboBox enterpriseFilter;
-        private CheckBox implementedOnlyCheckbox;
-        private TextBox searchTextBox;
-        private Button searchButton;
-        private Button clearFilterButton;
-        private Label statusLabel;
-        private RichTextBox accountDetailsTextBox;
-        private Panel summaryPanel;
+        private TabControl mainTabControl = null!;
+        private DataGridView accountLibraryGrid = null!;
+        private ComboBox categoryFilter = null!;
+        private ComboBox enterpriseFilter = null!;
+        private CheckBox implementedOnlyCheckbox = null!;
+        private TextBox searchTextBox = null!;
+        private Button searchButton = null!;
+        private Button clearFilterButton = null!;
+        private Label statusLabel = null!;
+        private RichTextBox accountDetailsTextBox = null!;
+        private Panel summaryPanel = null!;
 
         // Data
-        private List<AccountDefinition> currentAccounts;
-        private List<AccountDefinition> allAccounts;
+        private List<AccountDefinition> currentAccounts = null!;
+        private List<AccountDefinition> allAccounts = null!;
 
         public ResourcesForm()
         {
@@ -339,14 +339,14 @@ namespace WileyBudgetManagement.Forms
                 // Category filter
                 if (categoryFilter.SelectedIndex > 0)
                 {
-                    var selectedCategory = (AccountCategory)Enum.Parse(typeof(AccountCategory), categoryFilter.SelectedItem.ToString());
+                    var selectedCategory = (AccountCategory)Enum.Parse(typeof(AccountCategory), categoryFilter.SelectedItem?.ToString() ?? string.Empty);
                     filteredAccounts = filteredAccounts.Where(a => a.Category == selectedCategory);
                 }
 
                 // Enterprise filter
                 if (enterpriseFilter.SelectedIndex > 0)
                 {
-                    var selectedEnterprise = (EnterpriseType)Enum.Parse(typeof(EnterpriseType), enterpriseFilter.SelectedItem.ToString());
+                    var selectedEnterprise = (EnterpriseType)Enum.Parse(typeof(EnterpriseType), enterpriseFilter.SelectedItem?.ToString() ?? string.Empty);
                     filteredAccounts = filteredAccounts.Where(a => a.ApplicableEnterprises.HasFlag(selectedEnterprise) || 
                                                                   a.ApplicableEnterprises.HasFlag(EnterpriseType.All));
                 }
@@ -435,7 +435,7 @@ namespace WileyBudgetManagement.Forms
             return string.Join(", ", types);
         }
 
-        private void AccountGrid_SelectionChanged(object sender, EventArgs e)
+        private void AccountGrid_SelectionChanged(object? sender, EventArgs e)
         {
             if (accountLibraryGrid.SelectedRows.Count > 0)
             {
@@ -514,12 +514,12 @@ numbering conventions:
             };
         }
 
-        private void FilterChanged(object sender, EventArgs e)
+        private void FilterChanged(object? sender, EventArgs e)
         {
             RefreshAccountDisplay();
         }
 
-        private void ClearFilters(object sender, EventArgs e)
+        private void ClearFilters(object? sender, EventArgs e)
         {
             categoryFilter.SelectedIndex = 0;
             enterpriseFilter.SelectedIndex = 0;

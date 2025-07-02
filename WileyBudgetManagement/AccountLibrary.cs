@@ -302,7 +302,7 @@ namespace WileyBudgetManagement.Resources
             var categoryAccounts = GetAccountsByCategory(category);
             if (!categoryAccounts.Any()) return "000.00";
 
-            var maxAccount = categoryAccounts.Max(a => a.AccountNumber);
+            var maxAccount = categoryAccounts.Max(a => a.AccountNumber) ?? "000.00";
             var parts = maxAccount.Split('.');
             var baseNumber = int.Parse(parts[0]);
             var subNumber = int.Parse(parts[1]);

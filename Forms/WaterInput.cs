@@ -46,6 +46,10 @@ namespace WileyBudgetManagement.Forms
             _repository = new SanitationRepository(_databaseManager);
 
             InitializeComponent();
+            
+            // Apply modern UI styling
+            this.ApplyModernStyling();
+            
             InitializeControls();
             InitializeWaterDataGrid();
             InitializeCharts();
@@ -55,84 +59,77 @@ namespace WileyBudgetManagement.Forms
 
         private void InitializeControls()
         {
-            this.Text = "Water District - Revenue & Expenses";
+            UIStyleManager.ApplyFormStyle(this, "Water District - Revenue & Expenses");
             this.Size = new Size(1600, 1000); // Increased size for charts
-            this.StartPosition = FormStartPosition.CenterScreen;
 
-            // Create toolbar panel
-            var toolbarPanel = new Panel
-            {
-                Height = 50,
-                Dock = DockStyle.Top,
-                BackColor = Color.LightGray
-            };
+            // Create modern toolbar panel
+            var toolbarPanel = new Panel();
+            UIStyleManager.ApplyToolbarPanelStyle(toolbarPanel);
 
-            // Save button
+            // Enhanced Save button with success styling
             saveButton = new Button
             {
-                Text = "Save & Validate",
-                Size = new Size(120, 30),
-                Location = new Point(10, 10),
-                BackColor = Color.LightBlue
+                Text = "💾 Save & Validate",
+                Location = new Point(16, 12)
             };
+            UIStyleManager.ApplySuccessButtonStyle(saveButton);
             saveButton.Click += SaveButton_Click;
 
-            // Add Row button
+            // Enhanced Add Row button
             addRowButton = new Button
             {
-                Text = "Add Row",
-                Size = new Size(80, 30),
-                Location = new Point(140, 10),
-                BackColor = Color.LightGreen
+                Text = "➕ Add Row",
+                Location = new Point(152, 12)
             };
+            UIStyleManager.ApplyPrimaryButtonStyle(addRowButton);
             addRowButton.Click += AddRowButton_Click;
 
-            // Delete Row button
+            // Enhanced Delete Row button
             deleteRowButton = new Button
             {
-                Text = "Delete Row",
-                Size = new Size(90, 30),
-                Location = new Point(230, 10),
-                BackColor = Color.LightCoral
+                Text = "🗑️ Delete Row",
+                Location = new Point(268, 12)
             };
+            UIStyleManager.ApplyWarningButtonStyle(deleteRowButton);
             deleteRowButton.Click += DeleteRowButton_Click;
 
-            // Refresh Charts button
+            // Enhanced Refresh Charts button
             refreshChartsButton = new Button
             {
-                Text = "Refresh Charts",
-                Size = new Size(100, 30),
-                Location = new Point(330, 10),
-                BackColor = Color.LightSalmon
+                Text = "📊 Refresh Charts",
+                Location = new Point(384, 12)
             };
+            UIStyleManager.ApplySecondaryButtonStyle(refreshChartsButton);
             refreshChartsButton.Click += RefreshChartsButton_Click;
 
-            // Section filter
+            // Modern section filter
             var filterLabel = new Label
             {
                 Text = "Filter by Section:",
-                Location = new Point(450, 15),
+                Location = new Point(520, 18),
                 Size = new Size(100, 20)
             };
+            UIStyleManager.ApplyBodyLabelStyle(filterLabel);
 
             sectionFilterCombo = new ComboBox
             {
-                Size = new Size(150, 25),
-                Location = new Point(550, 12),
+                Size = new Size(150, 28),
+                Location = new Point(630, 15),
                 DropDownStyle = ComboBoxStyle.DropDownList
             };
+            UIStyleManager.ApplyComboBoxStyle(sectionFilterCombo);
             sectionFilterCombo.Items.AddRange(new[] { "All", "Revenue", "Operating", "Infrastructure", "Quality" });
             sectionFilterCombo.SelectedIndex = 0;
             sectionFilterCombo.SelectedIndexChanged += SectionFilterCombo_SelectedIndexChanged;
 
-            // Status label
+            // Enhanced status label
             statusLabel = new Label
             {
-                Text = "Ready",
-                Location = new Point(720, 15),
-                Size = new Size(300, 20),
-                ForeColor = Color.DarkGreen
+                Text = "💧 Water District Ready",
+                Location = new Point(800, 18),
+                Size = new Size(300, 20)
             };
+            UIStyleManager.ApplyStatusLabelStyle(statusLabel, UIStyleManager.StatusType.Success);
 
             toolbarPanel.Controls.AddRange(new Control[] {
                 saveButton, addRowButton, deleteRowButton, refreshChartsButton, filterLabel, sectionFilterCombo, statusLabel

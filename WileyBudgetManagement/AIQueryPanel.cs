@@ -16,19 +16,19 @@ namespace WileyBudgetManagement.Forms
     /// </summary>
     public partial class AIQueryPanel : Form
     {
-        private readonly AIQueryService _aiService;
-        private readonly ISanitationRepository _repository;
+        private readonly AIQueryService _aiService = null!;
+        private readonly ISanitationRepository _repository = null!;
 
-        // UI Controls
-        private TextBox queryTextBox;
-        private Button submitButton;
-        private Button clearButton;
-        private RichTextBox responseTextBox;
-        private ComboBox enterpriseSelector;
-        private ComboBox queryTypeSelector;
-        private Label statusLabel;
-        private ProgressBar progressBar;
-        private Panel quickQuestionsPanel;
+        // UI Controls - initialized to prevent null reference warnings
+        private TextBox queryTextBox = null!;
+        private Button submitButton = null!;
+        private Button clearButton = null!;
+        private RichTextBox responseTextBox = null!;
+        private ComboBox enterpriseSelector = null!;
+        private ComboBox queryTypeSelector = null!;
+        private Label statusLabel = null!;
+        private ProgressBar progressBar = null!;
+        private Panel quickQuestionsPanel = null!;
 
         // Sample queries for City Council
         private readonly string[] _sampleQueries = new[]
@@ -272,7 +272,7 @@ namespace WileyBudgetManagement.Forms
             // This could be enhanced to load from configuration or database
         }
 
-        private async void SubmitButton_Click(object sender, EventArgs e)
+        private async void SubmitButton_Click(object? sender, EventArgs e)
         {
             if (string.IsNullOrWhiteSpace(queryTextBox.Text))
             {
@@ -285,7 +285,7 @@ namespace WileyBudgetManagement.Forms
             await ProcessAIQuery();
         }
 
-        private void ClearButton_Click(object sender, EventArgs e)
+        private void ClearButton_Click(object? sender, EventArgs e)
         {
             queryTextBox.Clear();
             responseTextBox.Clear();
@@ -293,7 +293,7 @@ namespace WileyBudgetManagement.Forms
             statusLabel.ForeColor = Color.Green;
         }
 
-        private void QuickQuestion_Click(object sender, EventArgs e)
+        private void QuickQuestion_Click(object? sender, EventArgs e)
         {
             if (sender is Button button && button.Tag is string question)
             {
@@ -315,11 +315,12 @@ namespace WileyBudgetManagement.Forms
             try
             {
                 // Get current enterprise data based on selection
-                var enterpriseData = await GetEnterpriseData(enterpriseSelector.SelectedItem.ToString());
+                var selectedEnterprise = enterpriseSelector.SelectedItem?.ToString() ?? "All Enterprises";
+                var enterpriseData = await GetEnterpriseData(selectedEnterprise);
 
                 // Process based on query type
                 string response;
-                var queryType = queryTypeSelector.SelectedItem.ToString();
+                var queryType = queryTypeSelector.SelectedItem?.ToString() ?? "General Analysis";
 
                 if (queryType == "What-If Scenario")
                 {
@@ -361,6 +362,9 @@ namespace WileyBudgetManagement.Forms
 
         private async Task<EnterpriseContext> GetEnterpriseData(string enterprise)
         {
+            if (string.IsNullOrWhiteSpace(enterprise))
+                enterprise = "All Enterprises";
+
             try
             {
                 switch (enterprise)
