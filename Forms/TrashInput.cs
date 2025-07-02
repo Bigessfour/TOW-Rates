@@ -253,50 +253,58 @@ namespace WileyBudgetManagement.Forms
             decimal baseMonthly = district.MonthlyInput;
 
             // Trash Management Scenarios based on Rate Study Methodology
-            // Scenario 1: New Trash Truck ($350,000, 12-year lifespan, 5% interest)
-            decimal trashTruckMonthlyImpact = 2673.61m; // PMT calculation
+            // Scenario 1: New Trash Truck ($350,000, 12-year lifespan, 4.5% interest) - CRITICAL PRIORITY
+            decimal trashTruckAnnualCost = 32083.34m; // From rate study: $29,166.67 depreciation + $2,916.67 maintenance
+            decimal trashTruckMonthlyImpact = trashTruckAnnualCost / 12; // $2,673.61
 
             // Scenario 2: Recycling Program Expansion ($125,000, 7 years, 4% interest)
-            decimal recyclingProgramMonthlyImpact = 1697.43m;
+            decimal recyclingProgramAnnualCost = 20373.52m; // Enhanced program with processing equipment
+            decimal recyclingProgramMonthlyImpact = recyclingProgramAnnualCost / 12; // $1,697.79
 
-            // Scenario 3: Transfer Station Upgrade ($200,000, 15 years, 3.5% interest)
-            decimal transferStationMonthlyImpact = 1429.77m;
+            // Scenario 3: Transfer Station & Route Optimization ($200,000, 15 years, 3.5% interest)
+            decimal transferStationAnnualCost = 17157.24m; // Infrastructure + route efficiency
+            decimal transferStationMonthlyImpact = transferStationAnnualCost / 12; // $1,429.77
+
+            // Add fleet maintenance reserves (10% of equipment value annually)
+            decimal maintenanceReserve = (district.Section == "Equipment") ?
+                (350000m * 0.10m / 12) : 0; // $2,916.67 monthly for equipment accounts
 
             switch (district.Section)
             {
                 case "Revenue":
-                    // Revenue needs to cover equipment and program costs
-                    district.Scenario1 = baseMonthly + (trashTruckMonthlyImpact * district.PercentAllocation);
-                    district.Scenario2 = baseMonthly + (recyclingProgramMonthlyImpact * district.PercentAllocation);
-                    district.Scenario3 = baseMonthly + (transferStationMonthlyImpact * district.PercentAllocation);
+                    // Revenue needs to cover equipment and program costs with 2.67% rate increase
+                    // Sewage Sales base ($100,000) * 2.67% = $2,670 monthly impact
+                    district.Scenario1 = baseMonthly + (trashTruckMonthlyImpact * (district.PercentAllocation / 100m));
+                    district.Scenario2 = baseMonthly + (recyclingProgramMonthlyImpact * (district.PercentAllocation / 100m));
+                    district.Scenario3 = baseMonthly + (transferStationMonthlyImpact * (district.PercentAllocation / 100m));
                     break;
 
                 case "Collections":
-                    // Collection services directly affected by equipment
-                    district.Scenario1 = baseMonthly + trashTruckMonthlyImpact + district.GoalAdjustment;
-                    district.Scenario2 = baseMonthly + (recyclingProgramMonthlyImpact * 0.3m); // Partial impact
-                    district.Scenario3 = baseMonthly + (transferStationMonthlyImpact * 0.2m);
+                    // Collection services directly affected by new truck and route efficiency
+                    district.Scenario1 = baseMonthly + trashTruckMonthlyImpact + district.GoalAdjustment + maintenanceReserve;
+                    district.Scenario2 = baseMonthly + (recyclingProgramMonthlyImpact * 0.4m); // Collection impact for recycling
+                    district.Scenario3 = baseMonthly + (transferStationMonthlyImpact * 0.6m); // Route optimization savings
                     break;
 
                 case "Recycling":
-                    // Recycling programs
-                    district.Scenario1 = baseMonthly + (trashTruckMonthlyImpact * 0.1m); // Minimal impact
-                    district.Scenario2 = baseMonthly + recyclingProgramMonthlyImpact;
-                    district.Scenario3 = baseMonthly + (transferStationMonthlyImpact * 0.4m);
+                    // Recycling programs enhanced with new equipment and processing
+                    district.Scenario1 = baseMonthly + (trashTruckMonthlyImpact * 0.1m); // Minimal direct impact
+                    district.Scenario2 = baseMonthly + recyclingProgramMonthlyImpact + district.GoalAdjustment;
+                    district.Scenario3 = baseMonthly + (transferStationMonthlyImpact * 0.5m); // Processing efficiency
                     break;
 
                 case "Operations":
-                    // General operations
-                    district.Scenario1 = baseMonthly + (trashTruckMonthlyImpact * 0.15m);
-                    district.Scenario2 = baseMonthly + (recyclingProgramMonthlyImpact * 0.25m);
-                    district.Scenario3 = baseMonthly + transferStationMonthlyImpact;
+                    // General operations including fuel, disposal, and administrative costs
+                    district.Scenario1 = baseMonthly + (trashTruckMonthlyImpact * 0.2m); // Operational efficiency
+                    district.Scenario2 = baseMonthly + (recyclingProgramMonthlyImpact * 0.3m); // Program management
+                    district.Scenario3 = baseMonthly + (transferStationMonthlyImpact * 0.8m); // Full operational impact
                     break;
 
                 case "Equipment":
-                    // Equipment directly affected
-                    district.Scenario1 = baseMonthly + trashTruckMonthlyImpact;
-                    district.Scenario2 = baseMonthly + recyclingProgramMonthlyImpact;
-                    district.Scenario3 = baseMonthly + transferStationMonthlyImpact;
+                    // Equipment depreciation and maintenance - full impact scenarios
+                    district.Scenario1 = baseMonthly + trashTruckMonthlyImpact + maintenanceReserve;
+                    district.Scenario2 = baseMonthly + recyclingProgramMonthlyImpact + (maintenanceReserve * 0.3m);
+                    district.Scenario3 = baseMonthly + transferStationMonthlyImpact + (maintenanceReserve * 0.5m);
                     break;
 
                 default:
@@ -540,7 +548,64 @@ namespace WileyBudgetManagement.Forms
             // Trash-specific account validation
             if (!district.Account.StartsWith("T") && !string.IsNullOrWhiteSpace(district.Account))
             {
-                errors.Add($"{rowPrefix}Trash accounts should start with 'T' prefix");
+                warnings.Add($"{rowPrefix}Account should start with 'T' for Trash enterprise");
+            }
+
+            // Collection route efficiency validation
+            if (district.Section == "Collections" && district.RequiredRate > 30m)
+            {
+                warnings.Add($"{rowPrefix}Collection rate ${district.RequiredRate:F2} exceeds typical range ($15-$30)");
+            }
+
+            // Recycling program cost-effectiveness validation
+            if (district.Section == "Recycling" && district.MonthlyInput > 0)
+            {
+                decimal recyclingEfficiency = district.CurrentFYBudget / Math.Max(1, district.MonthlyInput * 12);
+                if (recyclingEfficiency > 2.0m)
+                {
+                    warnings.Add($"{rowPrefix}Recycling program efficiency ratio {recyclingEfficiency:F2} may indicate high costs");
+                }
+            }
+
+            // Equipment depreciation validation
+            if (district.Section == "Equipment")
+            {
+                // Validate truck depreciation - $350K truck over 12 years = $29,166.67 annual
+                decimal expectedAnnualDepreciation = 29166.67m;
+                decimal actualAnnualBudget = district.CurrentFYBudget;
+
+                if (Math.Abs(actualAnnualBudget - expectedAnnualDepreciation) > 5000m)
+                {
+                    warnings.Add($"{rowPrefix}Equipment budget ${actualAnnualBudget:F0} differs significantly from expected truck depreciation ${expectedAnnualDepreciation:F0}");
+                }
+
+                // Maintenance reserve validation (should be ~10% of asset value)
+                decimal expectedMaintenanceReserve = 35000m; // 10% of $350K truck
+                if (district.ReserveTarget < expectedMaintenanceReserve * 0.5m)
+                {
+                    warnings.Add($"{rowPrefix}Maintenance reserve ${district.ReserveTarget:F0} may be insufficient (recommended: ${expectedMaintenanceReserve:F0})");
+                }
+            }
+
+            // Seasonal adjustment validation for waste collection
+            if (district.Section == "Collections" || district.Section == "Operations")
+            {
+                // Seasonal variations typically 15-25% for waste collection
+                decimal seasonalPercentage = Math.Abs(district.SeasonalAdjustment) / Math.Max(1, district.MonthlyInput) * 100;
+                if (seasonalPercentage > 30m)
+                {
+                    warnings.Add($"{rowPrefix}Seasonal adjustment {seasonalPercentage:F1}% seems high for waste operations");
+                }
+            }
+
+            // Rate impact validation for Scenario 1 (New Truck)
+            if (district.Section == "Revenue" && district.Scenario1 > 0)
+            {
+                decimal rateIncrease = ((district.Scenario1 - district.MonthlyInput) / Math.Max(1, district.MonthlyInput)) * 100;
+                if (Math.Abs(rateIncrease - 2.67m) > 0.5m) // Expected 2.67% increase per rate study
+                {
+                    warnings.Add($"{rowPrefix}Scenario 1 rate increase {rateIncrease:F2}% differs from expected 2.67% for new truck");
+                }
             }
 
             // Section-specific validations
@@ -586,7 +651,7 @@ namespace WileyBudgetManagement.Forms
             {
                 if (district.CurrentFYBudget > 0 && district.MonthlyUsage == 0)
                 {
-                    warnings.Add($"{rowPrefix}Recycling program has budget but no tonnage data");
+                    warnings.Add($"{rowPrefix}Recycling program should track tonnage processed");
                 }
             }
         }
