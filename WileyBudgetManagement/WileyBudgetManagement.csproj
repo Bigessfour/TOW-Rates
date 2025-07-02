@@ -21,6 +21,8 @@
     <Compile Include="..\Forms\MockSanitationData.cs" />
     <Compile Include="..\Forms\DashboardForm.cs" />
     <Compile Include="..\Forms\DashboardForm.Designer.cs" />
+    <Compile Include="..\Forms\SanitationDistrictInput.cs" />
+    <Compile Include="..\Forms\SanitationDistrictInput.Designer.cs" />
     <Compile Include="..\Forms\WaterInput.cs" />
     <Compile Include="..\Forms\WaterInput.Designer.cs" />
     <Compile Include="..\Forms\ApartmentsInput.cs" />
@@ -30,6 +32,8 @@
     <Compile Include="..\Forms\SummaryPage.cs" />
     <Compile Include="..\Forms\SummaryPage.Designer.cs" />
     <Compile Include="..\Forms\ScenarioCalculator.cs" />
+    <Compile Include="..\Reports\ReportsForm.cs" />
+    <Compile Include="..\Reports\ReportsForm.Designer.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="SkiaSharp.Views.WindowsForms" Version="3.116.1" />

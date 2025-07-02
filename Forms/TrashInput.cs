@@ -1,10 +1,14 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 using Syncfusion.WinForms.DataGrid;
+using Syncfusion.WinForms.DataGrid.Events;
+using Syncfusion.Data;
 using WileyBudgetManagement.Models;
-using WileyBudgetManagement.Forms;
+using WileyBudgetManagement.Database;
 
 namespace WileyBudgetManagement.Forms
 {
@@ -12,13 +16,102 @@ namespace WileyBudgetManagement.Forms
     {
         private SfDataGrid trashDataGrid = null!;
         private BindingList<SanitationDistrict> trashData = null!;
+        private readonly ISanitationRepository _repository;
+        private readonly DatabaseManager _databaseManager;
+        private Button saveButton = null!;
+        private Button addRowButton = null!;
+        private Button deleteRowButton = null!;
+        private ComboBox sectionFilterCombo = null!;
+        private Label statusLabel = null!;
 
         public TrashInput()
         {
+            _databaseManager = new DatabaseManager();
+            _repository = new SanitationRepository(_databaseManager);
+
             InitializeComponent();
+            InitializeControls();
             InitializeTrashDataGrid();
-            LoadTrashData();
+            LoadTrashDataAsync();
             SetupValidation();
+        }
+
+        private void InitializeControls()
+        {
+            this.Text = "Trash & Sanitation District - Revenue & Expenses";
+            this.Size = new Size(1400, 800);
+            this.StartPosition = FormStartPosition.CenterScreen;
+
+            // Create toolbar panel
+            var toolbarPanel = new Panel
+            {
+                Height = 50,
+                Dock = DockStyle.Top,
+                BackColor = Color.LightGray
+            };
+
+            // Save button
+            saveButton = new Button
+            {
+                Text = "Save & Validate",
+                Size = new Size(120, 30),
+                Location = new Point(10, 10),
+                BackColor = Color.LightBlue
+            };
+            saveButton.Click += SaveButton_Click;
+
+            // Add Row button
+            addRowButton = new Button
+            {
+                Text = "Add Row",
+                Size = new Size(80, 30),
+                Location = new Point(140, 10),
+                BackColor = Color.LightGreen
+            };
+            addRowButton.Click += AddRowButton_Click;
+
+            // Delete Row button
+            deleteRowButton = new Button
+            {
+                Text = "Delete Row",
+                Size = new Size(90, 30),
+                Location = new Point(230, 10),
+                BackColor = Color.LightCoral
+            };
+            deleteRowButton.Click += DeleteRowButton_Click;
+
+            // Section filter
+            var filterLabel = new Label
+            {
+                Text = "Filter by Section:",
+                Location = new Point(350, 15),
+                Size = new Size(100, 20)
+            };
+
+            sectionFilterCombo = new ComboBox
+            {
+                Size = new Size(150, 25),
+                Location = new Point(450, 12),
+                DropDownStyle = ComboBoxStyle.DropDownList
+            };
+            sectionFilterCombo.Items.AddRange(new[] { "All", "Revenue", "Collections", "Recycling", "Operations", "Equipment" });
+            sectionFilterCombo.SelectedIndex = 0;
+            sectionFilterCombo.SelectedIndexChanged += SectionFilterCombo_SelectedIndexChanged;
+
+            // Status label
+            statusLabel = new Label
+            {
+                Text = "Ready",
+                Location = new Point(620, 15),
+                Size = new Size(300, 20),
+                ForeColor = Color.DarkGreen
+            };
+
+            toolbarPanel.Controls.AddRange(new Control[] {
+                saveButton, addRowButton, deleteRowButton, filterLabel, sectionFilterCombo, statusLabel
+            });
+
+            this.Controls.Add(toolbarPanel);
         }
 
         private void InitializeTrashDataGrid()
@@ -29,245 +122,729 @@ namespace WileyBudgetManagement.Forms
                 AllowEditing = true,
                 AllowResizingColumns = true,
                 AutoGenerateColumns = false,
-                ShowGroupDropArea = true
+                ShowGroupDropArea = true,
+                SelectionMode = Syncfusion.WinForms.DataGrid.Enums.GridSelectionMode.Single
             };
 
-            // Configure columns for Trash/Sanitation-specific data
-            trashDataGrid.Columns.Add(new GridTextColumn() { MappingName = "Account", HeaderText = "Account #", Width = 100 });
-            trashDataGrid.Columns.Add(new GridTextColumn() { MappingName = "Label", HeaderText = "Service Description", Width = 200 });
-            trashDataGrid.Columns.Add(new GridTextColumn() { MappingName = "Section", HeaderText = "Section", Width = 100 });
+            // Configure columns for Trash/Sanitation data following Rate Study Methodology
+            trashDataGrid.Columns.Add(new GridTextColumn() { MappingName = "Account", HeaderText = "Account #", Width = 80 });
+            trashDataGrid.Columns.Add(new GridTextColumn() { MappingName = "Label", HeaderText = "Description", Width = 250 });
+            trashDataGrid.Columns.Add(new GridComboBoxColumn()
+            {
+                MappingName = "Section",
+                HeaderText = "Section",
+                Width = 100,
+                DataSource = new[] { "Revenue", "Collections", "Recycling", "Operations", "Equipment" }
+            });
             trashDataGrid.Columns.Add(new GridNumericColumn() { MappingName = "CurrentFYBudget", HeaderText = "Current FY Budget", Width = 120, Format = "C" });
-            trashDataGrid.Columns.Add(new GridNumericColumn() { MappingName = "MonthlyInput", HeaderText = "Monthly Input", Width = 120, Format = "C" });
-            trashDataGrid.Columns.Add(new GridNumericColumn() { MappingName = "YearToDateSpending", HeaderText = "YTD Spending", Width = 120, Format = "C" });
-            trashDataGrid.Columns.Add(new GridNumericColumn() { MappingName = "PercentOfBudget", HeaderText = "% of Budget", Width = 100, Format = "P2" });
-            trashDataGrid.Columns.Add(new GridNumericColumn() { MappingName = "BudgetRemaining", HeaderText = "Budget Remaining", Width = 120, Format = "C" });
-            trashDataGrid.Columns.Add(new GridNumericColumn() { MappingName = "SeasonalAdjustment", HeaderText = "Seasonal Adjustment", Width = 130, Format = "C" });
-            trashDataGrid.Columns.Add(new GridNumericColumn() { MappingName = "RequiredRate", HeaderText = "Required Rate", Width = 120, Format = "C" });
+            trashDataGrid.Columns.Add(new GridNumericColumn() { MappingName = "SeasonalAdjustment", HeaderText = "Seasonal Adj", Width = 100, Format = "C" });
+            trashDataGrid.Columns.Add(new GridNumericColumn() { MappingName = "MonthlyInput", HeaderText = "Monthly Input", Width = 110, Format = "C" });
+            trashDataGrid.Columns.Add(new GridNumericColumn() { MappingName = "SeasonalRevenueFactor", HeaderText = "Seasonal Factor", Width = 100, Format = "N2" });
+            trashDataGrid.Columns.Add(new GridNumericColumn() { MappingName = "YearToDateSpending", HeaderText = "YTD Spending", Width = 110, Format = "C", AllowEditing = false, CellStyle = { BackColor = Color.LightGray } });
+            trashDataGrid.Columns.Add(new GridNumericColumn() { MappingName = "PercentOfBudget", HeaderText = "% of Budget", Width = 90, Format = "P2", AllowEditing = false, CellStyle = { BackColor = Color.LightGray } });
+            trashDataGrid.Columns.Add(new GridNumericColumn() { MappingName = "BudgetRemaining", HeaderText = "Budget Remaining", Width = 120, Format = "C", AllowEditing = false, CellStyle = { BackColor = Color.LightGray } });
+            trashDataGrid.Columns.Add(new GridNumericColumn() { MappingName = "GoalAdjustment", HeaderText = "Goal Adjustment", Width = 110, Format = "C" });
+            trashDataGrid.Columns.Add(new GridNumericColumn() { MappingName = "ReserveTarget", HeaderText = "Reserve Target", Width = 110, Format = "C" });
+            trashDataGrid.Columns.Add(new GridNumericColumn() { MappingName = "TimeOfUseFactor", HeaderText = "TOU Factor", Width = 90, Format = "N2" });
+            trashDataGrid.Columns.Add(new GridNumericColumn() { MappingName = "CustomerAffordabilityIndex", HeaderText = "Affordability", Width = 100, Format = "N2" });
+            trashDataGrid.Columns.Add(new GridNumericColumn() { MappingName = "PercentAllocation", HeaderText = "% Allocation", Width = 100, Format = "P2" });
+            trashDataGrid.Columns.Add(new GridNumericColumn() { MappingName = "MonthlyUsage", HeaderText = "Tonnage/Month", Width = 110, Format = "N1" });
+            trashDataGrid.Columns.Add(new GridNumericColumn() { MappingName = "Scenario1", HeaderText = "Scenario 1", Width = 90, Format = "C", AllowEditing = false, CellStyle = { BackColor = Color.LightYellow } });
+            trashDataGrid.Columns.Add(new GridNumericColumn() { MappingName = "Scenario2", HeaderText = "Scenario 2", Width = 90, Format = "C", AllowEditing = false, CellStyle = { BackColor = Color.LightYellow } });
+            trashDataGrid.Columns.Add(new GridNumericColumn() { MappingName = "Scenario3", HeaderText = "Scenario 3", Width = 90, Format = "C", AllowEditing = false, CellStyle = { BackColor = Color.LightYellow } });
+            trashDataGrid.Columns.Add(new GridNumericColumn() { MappingName = "RequiredRate", HeaderText = "Required Rate", Width = 100, Format = "C", AllowEditing = false, CellStyle = { BackColor = Color.LightBlue } });
+
+            // Handle cell value changes for real-time calculations
+            trashDataGrid.CurrentCellEndEdit += TrashDataGrid_CurrentCellEndEdit;
 
             this.Controls.Add(trashDataGrid);
         }
 
-        private void LoadTrashData()
+        private void TrashDataGrid_CurrentCellEndEdit(object? sender, CurrentCellEndEditEventArgs e)
         {
-            // Initialize with sample trash/sanitation data - will be replaced with database integration
-            trashData = new BindingList<SanitationDistrict>
+            if (trashData != null && trashDataGrid.CurrentCell != null)
             {
-                new SanitationDistrict
+                var rowIndex = trashDataGrid.CurrentCell.RowIndex;
+                if (rowIndex >= 0 && rowIndex < trashData.Count)
                 {
-                    Account = "T001",
-                    Label = "Residential Trash Collection",
-                    Section = "Collections",
-                    CurrentFYBudget = 320000,
-                    MonthlyInput = 26666.67m,
-                    YearToDateSpending = 160000,
-                    PercentOfBudget = 0.50m,
-                    BudgetRemaining = 160000,
-                    SeasonalAdjustment = 5000,
-                    RequiredRate = 22.50m
-                },
-                new SanitationDistrict
-                {
-                    Account = "T002",
-                    Label = "Commercial Trash Collection",
-                    Section = "Collections",
-                    CurrentFYBudget = 180000,
-                    MonthlyInput = 15000,
-                    YearToDateSpending = 90000,
-                    PercentOfBudget = 0.50m,
-                    BudgetRemaining = 90000,
-                    SeasonalAdjustment = 2500,
-                    RequiredRate = 45.00m
-                },
-                new SanitationDistrict
-                {
-                    Account = "T003",
-                    Label = "Recycling Program",
-                    Section = "Recycling",
-                    CurrentFYBudget = 95000,
-                    MonthlyInput = 7916.67m,
-                    YearToDateSpending = 47500,
-                    PercentOfBudget = 0.50m,
-                    BudgetRemaining = 47500,
-                    SeasonalAdjustment = 1500,
-                    RequiredRate = 8.75m
-                },
-                new SanitationDistrict
-                {
-                    Account = "T004",
-                    Label = "Landfill Operations",
-                    Section = "Operations",
-                    CurrentFYBudget = 125000,
-                    MonthlyInput = 10416.67m,
-                    YearToDateSpending = 62500,
-                    PercentOfBudget = 0.50m,
-                    BudgetRemaining = 62500,
-                    SeasonalAdjustment = 3000,
-                    RequiredRate = 15.25m
+                    var district = trashData[rowIndex];
+                    CalculateFields(district);
+                    RefreshGrid();
                 }
-            };
+            }
+        }
 
-            trashDataGrid.DataSource = trashData;
+        private void CalculateFields(SanitationDistrict district)
+        {
+            try
+            {
+                // Calculate YTD Spending with seasonal considerations
+                CalculateYearToDateSpending(district);
+
+                // Calculate Budget Remaining
+                district.BudgetRemaining = district.CurrentFYBudget - district.YearToDateSpending;
+
+                // Calculate Percent of Budget
+                if (district.CurrentFYBudget > 0)
+                {
+                    district.PercentOfBudget = district.YearToDateSpending / district.CurrentFYBudget;
+                }
+                else
+                {
+                    district.PercentOfBudget = 0;
+                }
+
+                // Calculate Total for summary purposes
+                district.Total = district.CurrentFYBudget + district.SeasonalAdjustment + district.GoalAdjustment;
+
+                // Calculate Trash-specific Scenarios
+                CalculateTrashScenarios(district);
+
+                // Calculate Required Rate
+                CalculateRequiredRate(district);
+
+                // Calculate Quarterly Summary
+                district.QuarterlySummary = (district.MonthlyInput * 3) + (district.SeasonalAdjustment / 4);
+            }
+            catch (Exception ex)
+            {
+                statusLabel.Text = $"Calculation error: {ex.Message}";
+                statusLabel.ForeColor = Color.Red;
+            }
+        }
+
+        private void CalculateYearToDateSpending(SanitationDistrict district)
+        {
+            // Get current month for YTD calculation
+            int currentMonth = DateTime.Now.Month;
+
+            // Base YTD calculation
+            decimal baseYTD = district.MonthlyInput * currentMonth;
+
+            // Apply seasonal adjustments for trash collection patterns
+            decimal seasonalImpact = 0;
+
+            if (district.Section == "Revenue")
+            {
+                // Revenue may vary seasonally (holiday waste, summer activities)
+                seasonalImpact = district.SeasonalAdjustment * district.SeasonalRevenueFactor;
+            }
+            else if (district.Section == "Collections")
+            {
+                // Collection costs may increase during peak seasons
+                seasonalImpact = district.SeasonalAdjustment * 1.2m;
+            }
+            else
+            {
+                seasonalImpact = district.SeasonalAdjustment;
+            }
+
+            district.YearToDateSpending = Math.Max(0, baseYTD + seasonalImpact);
+
+            // Cap at 120% of budget to prevent unrealistic values
+            if (district.YearToDateSpending > district.CurrentFYBudget * 1.2m)
+            {
+                district.YearToDateSpending = district.CurrentFYBudget * 1.2m;
+            }
+        }
+
+        private void CalculateTrashScenarios(SanitationDistrict district)
+        {
+            decimal baseMonthly = district.MonthlyInput;
+
+            // Trash Management Scenarios based on Rate Study Methodology
+            // Scenario 1: New Trash Truck ($350,000, 12-year lifespan, 5% interest)
+            decimal trashTruckMonthlyImpact = 2673.61m; // PMT calculation
+
+            // Scenario 2: Recycling Program Expansion ($125,000, 7 years, 4% interest)
+            decimal recyclingProgramMonthlyImpact = 1697.43m;
+
+            // Scenario 3: Transfer Station Upgrade ($200,000, 15 years, 3.5% interest)
+            decimal transferStationMonthlyImpact = 1429.77m;
+
+            switch (district.Section)
+            {
+                case "Revenue":
+                    // Revenue needs to cover equipment and program costs
+                    district.Scenario1 = baseMonthly + (trashTruckMonthlyImpact * district.PercentAllocation);
+                    district.Scenario2 = baseMonthly + (recyclingProgramMonthlyImpact * district.PercentAllocation);
+                    district.Scenario3 = baseMonthly + (transferStationMonthlyImpact * district.PercentAllocation);
+                    break;
+
+                case "Collections":
+                    // Collection services directly affected by equipment
+                    district.Scenario1 = baseMonthly + trashTruckMonthlyImpact + district.GoalAdjustment;
+                    district.Scenario2 = baseMonthly + (recyclingProgramMonthlyImpact * 0.3m); // Partial impact
+                    district.Scenario3 = baseMonthly + (transferStationMonthlyImpact * 0.2m);
+                    break;
+
+                case "Recycling":
+                    // Recycling programs
+                    district.Scenario1 = baseMonthly + (trashTruckMonthlyImpact * 0.1m); // Minimal impact
+                    district.Scenario2 = baseMonthly + recyclingProgramMonthlyImpact;
+                    district.Scenario3 = baseMonthly + (transferStationMonthlyImpact * 0.4m);
+                    break;
+
+                case "Operations":
+                    // General operations
+                    district.Scenario1 = baseMonthly + (trashTruckMonthlyImpact * 0.15m);
+                    district.Scenario2 = baseMonthly + (recyclingProgramMonthlyImpact * 0.25m);
+                    district.Scenario3 = baseMonthly + transferStationMonthlyImpact;
+                    break;
+
+                case "Equipment":
+                    // Equipment directly affected
+                    district.Scenario1 = baseMonthly + trashTruckMonthlyImpact;
+                    district.Scenario2 = baseMonthly + recyclingProgramMonthlyImpact;
+                    district.Scenario3 = baseMonthly + transferStationMonthlyImpact;
+                    break;
+
+                default:
+                    district.Scenario1 = baseMonthly;
+                    district.Scenario2 = baseMonthly;
+                    district.Scenario3 = baseMonthly;
+                    break;
+            }
+
+            // Apply time-of-use and affordability adjustments
+            ApplyFactors(district);
+
+            // Ensure scenarios are not negative
+            district.Scenario1 = Math.Max(0, district.Scenario1);
+            district.Scenario2 = Math.Max(0, district.Scenario2);
+            district.Scenario3 = Math.Max(0, district.Scenario3);
+        }
+
+        private void ApplyFactors(SanitationDistrict district)
+        {
+            if (district.TimeOfUseFactor > 0 && district.TimeOfUseFactor != 1.0m)
+            {
+                district.Scenario1 *= district.TimeOfUseFactor;
+                district.Scenario2 *= district.TimeOfUseFactor;
+                district.Scenario3 *= district.TimeOfUseFactor;
+            }
+
+            if (district.CustomerAffordabilityIndex > 0 && district.CustomerAffordabilityIndex != 1.0m)
+            {
+                district.Scenario1 *= district.CustomerAffordabilityIndex;
+                district.Scenario2 *= district.CustomerAffordabilityIndex;
+                district.Scenario3 *= district.CustomerAffordabilityIndex;
+            }
+        }
+
+        private void CalculateRequiredRate(SanitationDistrict district)
+        {
+            try
+            {
+                decimal calculatedRate = 0;
+                decimal customerBase = GetTotalCustomerBase();
+
+                if (customerBase <= 0) 
+                {
+                    district.RequiredRate = 0;
+                    return;
+                }
+
+                switch (district.Section)
+                {
+                    case "Revenue":
+                        calculatedRate = CalculateRevenueRequiredRate(district, customerBase);
+                        break;
+                    case "Collections":
+                        calculatedRate = district.CurrentFYBudget / customerBase / 12;
+                        break;
+                    case "Recycling":
+                        calculatedRate = (district.CurrentFYBudget + district.GoalAdjustment) / customerBase / 12;
+                        break;
+                    case "Operations":
+                        calculatedRate = district.CurrentFYBudget / customerBase / 12;
+                        break;
+                    case "Equipment":
+                        calculatedRate = (district.CurrentFYBudget + district.ReserveTarget) / customerBase / 12;
+                        break;
+                    default:
+                        calculatedRate = 0;
+                        break;
+                }
+
+                // Apply adjustment factors
+                if (district.TimeOfUseFactor > 0 && district.TimeOfUseFactor != 1.0m)
+                {
+                    calculatedRate *= district.TimeOfUseFactor;
+                }
+
+                if (district.CustomerAffordabilityIndex > 0 && district.CustomerAffordabilityIndex != 1.0m)
+                {
+                    calculatedRate *= district.CustomerAffordabilityIndex;
+                }
+
+                district.RequiredRate = Math.Max(0, calculatedRate);
+            }
+            catch (Exception)
+            {
+                district.RequiredRate = 0;
+            }
+        }
+
+        private decimal CalculateRevenueRequiredRate(SanitationDistrict district, decimal customerBase)
+        {
+            decimal totalExpenses = GetTotalExpenses();
+            decimal totalRevenue = GetTotalRevenue();
+
+            if (totalRevenue <= 0) return 0;
+
+            decimal revenueShare = district.CurrentFYBudget / totalRevenue;
+            return (totalExpenses * revenueShare) / customerBase / 12;
+        }
+
+        private decimal GetTotalExpenses()
+        {
+            return trashData?.Where(d => d.Section != "Revenue").Sum(d => d.CurrentFYBudget) ?? 0;
+        }
+
+        private decimal GetTotalRevenue()
+        {
+            return trashData?.Where(d => d.Section == "Revenue").Sum(d => d.CurrentFYBudget) ?? 0;
+        }
+
+        private decimal GetTotalCustomerBase()
+        {
+            return 850; // Town of Wiley approximate trash customer base
+        }
+
+        private void RefreshGrid()
+        {
+            trashDataGrid.View?.Refresh();
         }
 
         private void SetupValidation()
         {
-            // Add Save button for validation
-            var saveButton = new Button
-            {
-                Text = "Save & Validate",
-                Size = new Size(120, 30),
-                Location = new Point(10, 10),
-                BackColor = Color.LightGreen
-            };
-            saveButton.Click += SaveButton_Click;
-            this.Controls.Add(saveButton);
-
-            // Move data grid down to make room for button
-            trashDataGrid.Location = new Point(0, 50);
-            trashDataGrid.Height = this.Height - 50;
+            // Additional setup for grid behavior
             trashDataGrid.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
         }
 
         private void SaveButton_Click(object? sender, EventArgs e)
         {
             ValidateAllData();
+            SaveTrashDataAsync();
+        }
+
+        private void AddRowButton_Click(object? sender, EventArgs e)
+        {
+            var newDistrict = new SanitationDistrict
+            {
+                Account = $"T{trashData.Count + 1:000}",
+                Label = "New Trash Item",
+                Section = "Revenue",
+                EntryDate = DateTime.Now,
+                TimeOfUseFactor = 1.0m,
+                CustomerAffordabilityIndex = 1.0m,
+                SeasonalRevenueFactor = 1.0m
+            };
+
+            trashData.Add(newDistrict);
+            statusLabel.Text = "New row added";
+            statusLabel.ForeColor = Color.DarkGreen;
+        }
+
+        private void DeleteRowButton_Click(object? sender, EventArgs e)
+        {
+            if (trashDataGrid.SelectedIndex >= 0 && trashDataGrid.SelectedIndex < trashData.Count)
+            {
+                var result = MessageBox.Show("Are you sure you want to delete this row?", "Confirm Delete",
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+                if (result == DialogResult.Yes)
+                {
+                    trashData.RemoveAt(trashDataGrid.SelectedIndex);
+                    statusLabel.Text = "Row deleted";
+                    statusLabel.ForeColor = Color.DarkOrange;
+                }
+            }
+            else
+            {
+                MessageBox.Show("Please select a row to delete.", "No Selection", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+        private void SectionFilterCombo_SelectedIndexChanged(object? sender, EventArgs e)
+        {
+            string selectedSection = sectionFilterCombo.SelectedItem?.ToString() ?? "All";
+
+            if (selectedSection == "All")
+            {
+                trashDataGrid.View.Filter = null;
+            }
+            else
+            {
+                trashDataGrid.View.Filter = item =>
+                {
+                    var district = item as SanitationDistrict;
+                    return district?.Section == selectedSection;
+                };
+            }
+
+            trashDataGrid.View.RefreshFilter();
+            statusLabel.Text = $"Filtered by: {selectedSection}";
+            statusLabel.ForeColor = Color.Blue;
         }
 
         private void ValidateAllData()
         {
-            var validationErrors = new List<string>();
-            var validationWarnings = new List<string>();
+            var allErrors = new List<string>();
+            var allWarnings = new List<string>();
 
             for (int i = 0; i < trashData.Count; i++)
             {
                 var district = trashData[i];
                 var rowPrefix = $"Row {i + 1} ({district.Account}): ";
 
-                // Account validation
-                if (!ValidationHelper.ValidateAccount(district.Account, "T"))
+                // Use comprehensive validation helper
+                var fieldValidation = ValidationHelper.ValidateSanitationDistrict(district, "Trash");
+                var businessValidation = ValidationHelper.ValidateBusinessRules(district);
+
+                // Collect validation errors and warnings
+                foreach (var error in fieldValidation.Errors)
                 {
-                    validationErrors.Add($"{rowPrefix}Account must start with 'T' followed by 3-9 alphanumeric characters");
+                    allErrors.Add($"{rowPrefix}{error.Message}");
                 }
 
-                // Label validation
-                if (!ValidationHelper.ValidateLabel(district.Label))
+                foreach (var warning in fieldValidation.Warnings)
                 {
-                    validationErrors.Add($"{rowPrefix}Label must be 3-100 characters with valid characters only");
+                    allWarnings.Add($"{rowPrefix}{warning.Message}");
                 }
 
-                // Section validation
-                if (!ValidationHelper.ValidateSection(district.Section))
+                foreach (var error in businessValidation.Errors)
                 {
-                    validationErrors.Add($"{rowPrefix}Section must be 2-50 alphanumeric characters");
+                    allErrors.Add($"{rowPrefix}{error.Message}");
                 }
 
-                // Budget validations
-                if (!ValidationHelper.ValidateBudgetAmount(district.CurrentFYBudget))
+                foreach (var warning in businessValidation.Warnings)
                 {
-                    validationErrors.Add($"{rowPrefix}Current FY Budget must be between $0 and $10,000,000");
-                }
-
-                if (district.MonthlyInput < 0)
-                {
-                    validationErrors.Add($"{rowPrefix}Monthly Input cannot be negative");
-                }
-
-                if (district.YearToDateSpending < 0)
-                {
-                    validationErrors.Add($"{rowPrefix}Year to Date Spending cannot be negative");
-                }
-
-                if (district.YearToDateSpending > district.CurrentFYBudget)
-                {
-                    validationWarnings.Add($"{rowPrefix}YTD Spending exceeds annual budget");
-                }
-
-                if (!ValidationHelper.ValidatePercentage(district.PercentOfBudget))
-                {
-                    validationErrors.Add($"{rowPrefix}Percent of Budget must be between 0.0 and 1.0");
-                }
-
-                if (!ValidationHelper.ValidateRate(district.RequiredRate))
-                {
-                    validationErrors.Add($"{rowPrefix}Required Rate must be between $0 and $10,000");
+                    allWarnings.Add($"{rowPrefix}{warning.Message}");
                 }
 
                 // Trash-specific validations
-                if (district.SeasonalAdjustment < 0)
+                ValidateTrashSpecificRules(district, rowPrefix, allErrors, allWarnings);
+            }
+
+            // Global validations
+            ValidateTrashGlobalRules(allWarnings);
+
+            // Display validation results
+            DisplayValidationResults(allErrors, allWarnings);
+        }
+
+        private void ValidateTrashSpecificRules(SanitationDistrict district, string rowPrefix, List<string> errors, List<string> warnings)
+        {
+            // Trash-specific account validation
+            if (!district.Account.StartsWith("T") && !string.IsNullOrWhiteSpace(district.Account))
+            {
+                errors.Add($"{rowPrefix}Trash accounts should start with 'T' prefix");
+            }
+
+            // Section-specific validations
+            var validSections = new[] { "Revenue", "Collections", "Recycling", "Operations", "Equipment" };
+            if (!validSections.Contains(district.Section))
+            {
+                errors.Add($"{rowPrefix}Section must be one of: {string.Join(", ", validSections)}");
+            }
+
+            // Tonnage validation (using MonthlyUsage field)
+            if (district.MonthlyUsage < 0)
+            {
+                errors.Add($"{rowPrefix}Monthly Tonnage cannot be negative");
+            }
+
+            if (district.MonthlyUsage > 10000) // 10,000 tons seems excessive for a small town
+            {
+                warnings.Add($"{rowPrefix}Monthly Tonnage ({district.MonthlyUsage:N1} tons) seems unusually high for a municipal operation");
+            }
+
+            // Collection-specific validations
+            if (district.Section == "Collections" && district.CurrentFYBudget < 50000)
+            {
+                warnings.Add($"{rowPrefix}Collection budget may be insufficient for adequate service");
+            }
+
+            // Equipment replacement validation
+            if (district.Section == "Equipment")
+            {
+                if (district.ReserveTarget < district.CurrentFYBudget * 0.1m)
                 {
-                    validationErrors.Add($"{rowPrefix}Seasonal Adjustment cannot be negative");
+                    warnings.Add($"{rowPrefix}Equipment reserve target should be at least 10% of annual budget");
                 }
 
-                if (district.SeasonalAdjustment > district.CurrentFYBudget * 0.5m)
+                if (district.Scenario1 > district.CurrentFYBudget * 2)
                 {
-                    validationWarnings.Add($"{rowPrefix}Seasonal Adjustment exceeds 50% of annual budget");
-                }
-
-                // Business rule validations
-                decimal calculatedRemaining = district.CurrentFYBudget - district.YearToDateSpending;
-                if (Math.Abs(district.BudgetRemaining - calculatedRemaining) > 0.01m)
-                {
-                    validationWarnings.Add($"{rowPrefix}Budget Remaining should be {calculatedRemaining:C} (Budget - YTD)");
-                }
-
-                if (district.CurrentFYBudget > 0)
-                {
-                    decimal calculatedPercent = district.YearToDateSpending / district.CurrentFYBudget;
-                    if (Math.Abs(district.PercentOfBudget - calculatedPercent) > 0.01m)
-                    {
-                        validationWarnings.Add($"{rowPrefix}Percent of Budget should be {calculatedPercent:P2} (YTD/Budget)");
-                    }
-                }
-
-                // Check if monthly input aligns with annual budget
-                if (district.MonthlyInput > 0 && district.CurrentFYBudget > 0)
-                {
-                    decimal annualFromMonthly = district.MonthlyInput * 12;
-                    decimal variance = Math.Abs(annualFromMonthly - district.CurrentFYBudget) / district.CurrentFYBudget;
-                    if (variance > 0.1m)
-                    {
-                        validationWarnings.Add($"{rowPrefix}Monthly Input * 12 ({annualFromMonthly:C}) differs significantly from Annual Budget");
-                    }
+                    warnings.Add($"{rowPrefix}Scenario 1 (New Truck) impact seems very high");
                 }
             }
 
-            // Display validation results
-            if (validationErrors.Any() || validationWarnings.Any())
+            // Recycling program validation
+            if (district.Section == "Recycling")
+            {
+                if (district.CurrentFYBudget > 0 && district.MonthlyUsage == 0)
+                {
+                    warnings.Add($"{rowPrefix}Recycling program has budget but no tonnage data");
+                }
+            }
+        }
+
+        private void ValidateTrashGlobalRules(List<string> warnings)
+        {
+            decimal totalRevenue = GetTotalRevenue();
+            decimal totalExpenses = GetTotalExpenses();
+
+            // Revenue vs Expense balance validation
+            if (totalExpenses > totalRevenue)
+            {
+                decimal deficit = totalExpenses - totalRevenue;
+                warnings.Add($"BUDGET IMBALANCE: Total Expenses ({totalExpenses:C}) exceed Total Revenue ({totalRevenue:C}) by {deficit:C}");
+            }
+
+            // Check equipment allocation
+            decimal equipmentCosts = trashData?.Where(d => d.Section == "Equipment").Sum(d => d.CurrentFYBudget) ?? 0;
+            decimal totalBudget = totalRevenue + totalExpenses;
+
+            if (equipmentCosts < totalBudget * 0.20m)
+            {
+                warnings.Add("Equipment allocation may be too low (recommended: at least 20% of total budget for replacement reserves)");
+            }
+
+            // Check recycling allocation
+            decimal recyclingCosts = trashData?.Where(d => d.Section == "Recycling").Sum(d => d.CurrentFYBudget) ?? 0;
+            
+            if (recyclingCosts < totalBudget * 0.10m)
+            {
+                warnings.Add("Recycling allocation may be too low (recommended: at least 10% of total budget)");
+            }
+
+            // Check tonnage vs budget alignment
+            decimal totalTonnage = trashData?.Sum(d => d.MonthlyUsage) ?? 0;
+            if (totalTonnage > 0 && totalBudget > 0)
+            {
+                decimal costPerTon = totalBudget / (totalTonnage * 12);
+                if (costPerTon > 150)
+                {
+                    warnings.Add($"Cost per ton ({costPerTon:C}) seems high - consider efficiency improvements");
+                }
+                else if (costPerTon < 50)
+                {
+                    warnings.Add($"Cost per ton ({costPerTon:C}) seems low - verify tonnage data accuracy");
+                }
+            }
+        }
+
+        private void DisplayValidationResults(List<string> errors, List<string> warnings)
+        {
+            if (errors.Any() || warnings.Any())
             {
                 string message = "";
 
-                if (validationErrors.Any())
+                if (errors.Any())
                 {
                     message += "ERRORS (must be fixed):\n";
-                    message += string.Join("\n", validationErrors.Take(10));
-                    if (validationErrors.Count > 10)
-                        message += $"\n... and {validationErrors.Count - 10} more errors";
+                    message += string.Join("\n", errors.Take(10));
+                    if (errors.Count > 10)
+                        message += $"\n... and {errors.Count - 10} more errors";
                     message += "\n\n";
                 }
 
-                if (validationWarnings.Any())
+                if (warnings.Any())
                 {
                     message += "WARNINGS (recommended to fix):\n";
-                    message += string.Join("\n", validationWarnings.Take(10));
-                    if (validationWarnings.Count > 10)
-                        message += $"\n... and {validationWarnings.Count - 10} more warnings";
+                    message += string.Join("\n", warnings.Take(10));
+                    if (warnings.Count > 10)
+                        message += $"\n... and {warnings.Count - 10} more warnings";
                 }
 
-                var icon = validationErrors.Any() ? MessageBoxIcon.Error : MessageBoxIcon.Warning;
-                var title = validationErrors.Any() ? "Trash Data Validation Errors" : "Trash Data Validation Warnings";
+                var icon = errors.Any() ? MessageBoxIcon.Error : MessageBoxIcon.Warning;
+                var title = errors.Any() ? "Validation Errors" : "Validation Warnings";
 
                 MessageBox.Show(message, title, MessageBoxButtons.OK, icon);
+
+                statusLabel.Text = errors.Any() ? "Validation failed" : "Validation warnings";
+                statusLabel.ForeColor = errors.Any() ? Color.Red : Color.Orange;
             }
             else
             {
-                MessageBox.Show("All trash data validations passed successfully!", "Validation Complete",
+                MessageBox.Show("All validations passed successfully!", "Validation Complete",
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                statusLabel.Text = "Validation passed";
+                statusLabel.ForeColor = Color.DarkGreen;
             }
+        }
+
+        private void LoadTrashDataAsync()
+        {
+            try
+            {
+                // Initialize with predefined trash district data
+                trashData = GetDefaultTrashData();
+                trashDataGrid.DataSource = trashData;
+
+                statusLabel.Text = "Default trash data loaded";
+                statusLabel.ForeColor = Color.Blue;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading trash data: {ex.Message}", "Database Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+
+                trashData = new BindingList<SanitationDistrict>();
+                trashDataGrid.DataSource = trashData;
+
+                statusLabel.Text = "Error loading data";
+                statusLabel.ForeColor = Color.Red;
+            }
+        }
+
+        private BindingList<SanitationDistrict> GetDefaultTrashData()
+        {
+            return new BindingList<SanitationDistrict>
+            {
+                // Revenue Items for Trash District
+                new SanitationDistrict { Account = "T311.00", Label = "Specific Ownership Taxes - Trash", Section = "Revenue", CurrentFYBudget = 22000.00m, MonthlyInput = 1833.33m, SeasonalAdjustment = 0, SeasonalRevenueFactor = 1.0m, TimeOfUseFactor = 1.0m, CustomerAffordabilityIndex = 1.0m, PercentAllocation = 0.30m, EntryDate = DateTime.Now },
+                new SanitationDistrict { Account = "T301.00", Label = "Residential Trash Collection Fees", Section = "Revenue", CurrentFYBudget = 320000.00m, MonthlyInput = 26666.67m, SeasonalAdjustment = 8000, SeasonalRevenueFactor = 1.1m, TimeOfUseFactor = 1.0m, CustomerAffordabilityIndex = 0.95m, PercentAllocation = 0.85m, MonthlyUsage = 850, EntryDate = DateTime.Now },
+                new SanitationDistrict { Account = "T301.10", Label = "Commercial Trash Collection Fees", Section = "Revenue", CurrentFYBudget = 180000.00m, MonthlyInput = 15000.00m, SeasonalAdjustment = 5000, SeasonalRevenueFactor = 1.2m, TimeOfUseFactor = 1.0m, CustomerAffordabilityIndex = 1.0m, PercentAllocation = 0.85m, MonthlyUsage = 425, EntryDate = DateTime.Now },
+                new SanitationDistrict { Account = "T320.00", Label = "Penalties and Interest - Trash", Section = "Revenue", CurrentFYBudget = 12000.00m, MonthlyInput = 1000.00m, SeasonalAdjustment = 0, SeasonalRevenueFactor = 1.0m, TimeOfUseFactor = 1.0m, CustomerAffordabilityIndex = 1.0m, PercentAllocation = 0.30m, EntryDate = DateTime.Now },
+                new SanitationDistrict { Account = "T315.00", Label = "Interest on Investments - Trash", Section = "Revenue", CurrentFYBudget = 8000.00m, MonthlyInput = 666.67m, SeasonalAdjustment = 0, SeasonalRevenueFactor = 1.0m, TimeOfUseFactor = 1.0m, CustomerAffordabilityIndex = 1.0m, PercentAllocation = 0.30m, EntryDate = DateTime.Now },
+
+                // Collection Operations
+                new SanitationDistrict { Account = "T401.00", Label = "Collection Route Operations", Section = "Collections", CurrentFYBudget = 180000.00m, MonthlyInput = 15000.00m, SeasonalAdjustment = 3000, TimeOfUseFactor = 1.1m, CustomerAffordabilityIndex = 1.0m, EntryDate = DateTime.Now },
+                new SanitationDistrict { Account = "T410.00", Label = "Collection Supplies", Section = "Collections", CurrentFYBudget = 8500.00m, MonthlyInput = 708.33m, SeasonalAdjustment = 500, TimeOfUseFactor = 1.0m, CustomerAffordabilityIndex = 1.0m, EntryDate = DateTime.Now },
+                new SanitationDistrict { Account = "T415.00", Label = "Vehicle Maintenance - Collection", Section = "Collections", CurrentFYBudget = 25000.00m, MonthlyInput = 2083.33m, SeasonalAdjustment = 2000, TimeOfUseFactor = 1.2m, CustomerAffordabilityIndex = 1.0m, EntryDate = DateTime.Now },
+                new SanitationDistrict { Account = "T491.00", Label = "Fuel - Collection Vehicles", Section = "Collections", CurrentFYBudget = 18000.00m, MonthlyInput = 1500.00m, SeasonalAdjustment = 1000, TimeOfUseFactor = 1.3m, CustomerAffordabilityIndex = 1.0m, EntryDate = DateTime.Now },
+
+                // Recycling Program
+                new SanitationDistrict { Account = "T501.00", Label = "Recycling Collection", Section = "Recycling", CurrentFYBudget = 45000.00m, MonthlyInput = 3750.00m, SeasonalAdjustment = 1000, GoalAdjustment = 5000, TimeOfUseFactor = 1.0m, CustomerAffordabilityIndex = 1.0m, MonthlyUsage = 125, EntryDate = DateTime.Now },
+                new SanitationDistrict { Account = "T502.00", Label = "Recycling Processing", Section = "Recycling", CurrentFYBudget = 25000.00m, MonthlyInput = 2083.33m, SeasonalAdjustment = 0, GoalAdjustment = 3000, TimeOfUseFactor = 1.0m, CustomerAffordabilityIndex = 1.0m, MonthlyUsage = 85, EntryDate = DateTime.Now },
+                new SanitationDistrict { Account = "T503.00", Label = "Recycling Education", Section = "Recycling", CurrentFYBudget = 8000.00m, MonthlyInput = 666.67m, SeasonalAdjustment = 0, GoalAdjustment = 1000, TimeOfUseFactor = 1.0m, CustomerAffordabilityIndex = 1.0m, EntryDate = DateTime.Now },
+
+                // General Operations
+                new SanitationDistrict { Account = "T425.00", Label = "Transfer Station Operations", Section = "Operations", CurrentFYBudget = 55000.00m, MonthlyInput = 4583.33m, SeasonalAdjustment = 2500, TimeOfUseFactor = 1.1m, CustomerAffordabilityIndex = 1.0m, EntryDate = DateTime.Now },
+                new SanitationDistrict { Account = "T430.00", Label = "Trash Services Insurance", Section = "Operations", CurrentFYBudget = 12000.00m, MonthlyInput = 1000.00m, SeasonalAdjustment = 0, TimeOfUseFactor = 1.0m, CustomerAffordabilityIndex = 1.0m, EntryDate = DateTime.Now },
+                new SanitationDistrict { Account = "T435.00", Label = "Landfill Tipping Fees", Section = "Operations", CurrentFYBudget = 75000.00m, MonthlyInput = 6250.00m, SeasonalAdjustment = 3000, TimeOfUseFactor = 1.2m, CustomerAffordabilityIndex = 1.0m, EntryDate = DateTime.Now },
+                new SanitationDistrict { Account = "T440.00", Label = "Environmental Compliance", Section = "Operations", CurrentFYBudget = 8500.00m, MonthlyInput = 708.33m, SeasonalAdjustment = 0, TimeOfUseFactor = 1.0m, CustomerAffordabilityIndex = 1.0m, EntryDate = DateTime.Now },
+
+                // Equipment & Vehicles
+                new SanitationDistrict { Account = "T600.00", Label = "Trash Collection Vehicles", Section = "Equipment", CurrentFYBudget = 50000.00m, MonthlyInput = 4166.67m, SeasonalAdjustment = 0, GoalAdjustment = 25000, ReserveTarget = 75000, TimeOfUseFactor = 1.0m, CustomerAffordabilityIndex = 1.0m, EntryDate = DateTime.Now },
+                new SanitationDistrict { Account = "T601.00", Label = "Collection Equipment", Section = "Equipment", CurrentFYBudget = 15000.00m, MonthlyInput = 1250.00m, SeasonalAdjustment = 0, GoalAdjustment = 5000, ReserveTarget = 20000, TimeOfUseFactor = 1.0m, CustomerAffordabilityIndex = 1.0m, EntryDate = DateTime.Now },
+                new SanitationDistrict { Account = "T602.00", Label = "Container Replacement", Section = "Equipment", CurrentFYBudget = 12000.00m, MonthlyInput = 1000.00m, SeasonalAdjustment = 1000, GoalAdjustment = 3000, ReserveTarget = 10000, TimeOfUseFactor = 1.0m, CustomerAffordabilityIndex = 1.0m, EntryDate = DateTime.Now }
+            };
         }
 
         public BindingList<SanitationDistrict> GetTrashData()
         {
             return trashData;
+        }
+
+        public async void SaveTrashDataAsync()
+        {
+            try
+            {
+                // Calculate all fields before saving
+                foreach (var district in trashData)
+                {
+                    CalculateFields(district);
+                }
+
+                bool success = await _repository.SaveAllAsync(trashData, "Trash");
+                if (success)
+                {
+                    MessageBox.Show("Trash District data saved successfully!", "Save Complete",
+                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                    statusLabel.Text = "Data saved successfully";
+                    statusLabel.ForeColor = Color.DarkGreen;
+                }
+                else
+                {
+                    MessageBox.Show("Failed to save trash district data.", "Save Error",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                    statusLabel.Text = "Save failed";
+                    statusLabel.ForeColor = Color.Red;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error saving trash district data: {ex.Message}", "Save Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                statusLabel.Text = "Save error";
+                statusLabel.ForeColor = Color.Red;
+            }
+        }
+
+        // Additional methods for comprehensive functionality
+        public Dictionary<string, decimal> GetTrashSummaryStatistics()
+        {
+            var stats = new Dictionary<string, decimal>();
+
+            try
+            {
+                stats["TotalRevenue"] = GetTotalRevenue();
+                stats["TotalExpenses"] = GetTotalExpenses();
+                stats["NetIncome"] = stats["TotalRevenue"] - stats["TotalExpenses"];
+                stats["AverageRequiredRate"] = trashData.Average(d => d.RequiredRate);
+                stats["TotalYTDSpending"] = trashData.Sum(d => d.YearToDateSpending);
+                stats["TotalMonthlyTonnage"] = trashData.Sum(d => d.MonthlyUsage);
+                stats["EquipmentInvestment"] = trashData.Where(d => d.Section == "Equipment").Sum(d => d.CurrentFYBudget + d.ReserveTarget);
+                stats["RecyclingInvestment"] = trashData.Where(d => d.Section == "Recycling").Sum(d => d.CurrentFYBudget);
+            }
+            catch (Exception)
+            {
+                stats.Clear();
+            }
+
+            return stats;
+        }
+
+        public void ExportTrashData(string filePath)
+        {
+            try
+            {
+                using (var writer = new System.IO.StreamWriter(filePath))
+                {
+                    writer.WriteLine("Account,Label,Section,CurrentFYBudget,MonthlyInput,YearToDateSpending,PercentOfBudget,BudgetRemaining,MonthlyTonnage,Scenario1,Scenario2,Scenario3,RequiredRate");
+
+                    foreach (var district in trashData)
+                    {
+                        writer.WriteLine($"{district.Account},{district.Label},{district.Section},{district.CurrentFYBudget:F2},{district.MonthlyInput:F2},{district.YearToDateSpending:F2},{district.PercentOfBudget:F4},{district.BudgetRemaining:F2},{district.MonthlyUsage:F1},{district.Scenario1:F2},{district.Scenario2:F2},{district.Scenario3:F2},{district.RequiredRate:F2}");
+                    }
+                }
+
+                statusLabel.Text = "Trash data exported successfully";
+                statusLabel.ForeColor = Color.DarkGreen;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error exporting trash data: {ex.Message}", "Export Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        public void RecalculateAllTrash()
+        {
+            try
+            {
+                foreach (var district in trashData)
+                {
+                    CalculateFields(district);
+                }
+
+                RefreshGrid();
+                statusLabel.Text = "All trash calculations refreshed";
+                statusLabel.ForeColor = Color.DarkGreen;
+            }
+            catch (Exception ex)
+            {
+                statusLabel.Text = $"Recalculation error: {ex.Message}";
+                statusLabel.ForeColor = Color.Red;
+            }
         }
     }
 }

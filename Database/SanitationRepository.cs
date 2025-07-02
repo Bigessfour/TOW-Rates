@@ -9,6 +9,7 @@ namespace WileyBudgetManagement.Database
 {
     public interface ISanitationRepository
     {
+        Task<BindingList<SanitationDistrict>> GetSanitationDistrictDataAsync();
         Task<BindingList<SanitationDistrict>> GetWaterDataAsync();
         Task<BindingList<SanitationDistrict>> GetTrashDataAsync();
         Task<BindingList<SanitationDistrict>> GetApartmentDataAsync();
@@ -27,6 +28,16 @@ namespace WileyBudgetManagement.Database
         public SanitationRepository(DatabaseManager databaseManager)
         {
             _databaseManager = databaseManager ?? throw new ArgumentNullException(nameof(databaseManager));
+        }
+
+        public async Task<BindingList<SanitationDistrict>> GetSanitationDistrictDataAsync()
+        {
+            if (_databaseManager.IsMockDataEnabled)
+            {
+                return GetMockSanitationDistrictData();
+            }
+
+            return await GetDataFromTableAsync("SanitationDistrict");
         }
 
         public async Task<BindingList<SanitationDistrict>> GetWaterDataAsync()
@@ -325,6 +336,7 @@ namespace WileyBudgetManagement.Database
         {
             return category switch
             {
+                "SanitationDistrict" => "SanitationDistrict",
                 "Water" => "Water",
                 "Trash" => "Trash",
                 "Apartments" => "Apartments",
@@ -393,10 +405,32 @@ namespace WileyBudgetManagement.Database
         {
             return category switch
             {
+                "SanitationDistrict" => GetMockSanitationDistrictData(),
                 "Water" => GetMockWaterData(),
                 "Trash" => GetMockTrashData(),
                 "Apartments" => GetMockApartmentData(),
                 _ => new BindingList<SanitationDistrict>()
+            };
+        }
+
+        private BindingList<SanitationDistrict> GetMockSanitationDistrictData()
+        {
+            return new BindingList<SanitationDistrict>
+            {
+                // Revenue Items
+                new SanitationDistrict { Account = "311.00", Label = "Specific Ownership Taxes", Section = "Revenue", CurrentFYBudget = 15500.00m, MonthlyInput = 1291.67m, SeasonalAdjustment = 0, SeasonalRevenueFactor = 1.0m, YearToDateSpending = 7750.00m, PercentOfBudget = 0.50m, BudgetRemaining = 7750.00m, TimeOfUseFactor = 1.0m, CustomerAffordabilityIndex = 1.0m },
+                new SanitationDistrict { Account = "301.00", Label = "Sewage Sales", Section = "Revenue", CurrentFYBudget = 100000.00m, MonthlyInput = 8333.33m, SeasonalAdjustment = 0, SeasonalRevenueFactor = 1.2m, YearToDateSpending = 50000.00m, PercentOfBudget = 0.50m, BudgetRemaining = 50000.00m, TimeOfUseFactor = 1.1m, CustomerAffordabilityIndex = 0.9m },
+                new SanitationDistrict { Account = "310.10", Label = "Delinquent Taxes", Section = "Revenue", CurrentFYBudget = 2500.00m, MonthlyInput = 208.33m, SeasonalAdjustment = 0, SeasonalRevenueFactor = 1.0m, YearToDateSpending = 1250.00m, PercentOfBudget = 0.50m, BudgetRemaining = 1250.00m, TimeOfUseFactor = 1.0m, CustomerAffordabilityIndex = 1.0m },
+                
+                // Operating Expenses
+                new SanitationDistrict { Account = "401.00", Label = "Permits and Assessments", Section = "Operating", CurrentFYBudget = 976.00m, MonthlyInput = 81.33m, SeasonalAdjustment = 0, YearToDateSpending = 488.00m, PercentOfBudget = 0.50m, BudgetRemaining = 488.00m, TimeOfUseFactor = 1.0m, CustomerAffordabilityIndex = 1.0m },
+                new SanitationDistrict { Account = "418.00", Label = "Lift Station Utilities", Section = "Operating", CurrentFYBudget = 15000.00m, MonthlyInput = 1250.00m, SeasonalAdjustment = 500, YearToDateSpending = 7500.00m, PercentOfBudget = 0.50m, BudgetRemaining = 7500.00m, TimeOfUseFactor = 1.2m, CustomerAffordabilityIndex = 1.0m },
+                new SanitationDistrict { Account = "432.53", Label = "Sewer Cleaning", Section = "Operating", CurrentFYBudget = 7600.00m, MonthlyInput = 633.33m, SeasonalAdjustment = 1500, YearToDateSpending = 3800.00m, PercentOfBudget = 0.50m, BudgetRemaining = 3800.00m, TimeOfUseFactor = 1.5m, CustomerAffordabilityIndex = 1.0m },
+                
+                // Admin Expenses
+                new SanitationDistrict { Account = "460.00", Label = "Supt Salaries", Section = "Admin", CurrentFYBudget = 26000.00m, MonthlyInput = 2166.67m, SeasonalAdjustment = 0, YearToDateSpending = 13000.00m, PercentOfBudget = 0.50m, BudgetRemaining = 13000.00m, PercentAllocation = 0.40m, TimeOfUseFactor = 1.0m, CustomerAffordabilityIndex = 1.0m },
+                new SanitationDistrict { Account = "460.10", Label = "Clerk Salaries", Section = "Admin", CurrentFYBudget = 26000.00m, MonthlyInput = 2166.67m, SeasonalAdjustment = 0, YearToDateSpending = 13000.00m, PercentOfBudget = 0.50m, BudgetRemaining = 13000.00m, PercentAllocation = 0.40m, TimeOfUseFactor = 1.0m, CustomerAffordabilityIndex = 1.0m },
+                new SanitationDistrict { Account = "491.11", Label = "Employee Benefits", Section = "Admin", CurrentFYBudget = 16000.00m, MonthlyInput = 1333.33m, SeasonalAdjustment = 0, YearToDateSpending = 8000.00m, PercentOfBudget = 0.50m, BudgetRemaining = 8000.00m, PercentAllocation = 0.40m, TimeOfUseFactor = 1.0m, CustomerAffordabilityIndex = 1.0m }
             };
         }
 
