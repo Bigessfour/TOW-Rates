@@ -13,14 +13,14 @@ namespace WileyBudgetManagement.Services.Calculations
     /// </summary>
     public class AIEnhancedCalculations : IDisposable
     {
-        private readonly AIEnhancedQueryService _aiService;
+        private readonly AIEnhancedQueryService? _aiService;
         private readonly BasicCalculations _basicCalculations;
         private readonly bool _aiAvailable;
 
         public AIEnhancedCalculations()
         {
             _basicCalculations = new BasicCalculations();
-            
+
             try
             {
                 _aiService = new AIEnhancedQueryService();
@@ -111,8 +111,8 @@ namespace WileyBudgetManagement.Services.Calculations
                 try
                 {
                     var anomalyContext = $"Analyzing {historicalData.Count} financial data points for potential anomalies in enterprise {enterpriseData.Name}";
-                    var aiResponse = await _aiService.QueryAnomalyDetection(enterpriseData, anomalyContext);
-                    
+                    var aiResponse = await _aiService!.QueryAnomalyDetection(enterpriseData, anomalyContext);
+
                     if (!string.IsNullOrEmpty(aiResponse?.Analysis))
                     {
                         // Get basic results and enhance with AI narrative
@@ -214,8 +214,8 @@ namespace WileyBudgetManagement.Services.Calculations
                           and competitive rates in the region. Provide specific rate recommendations
                           with confidence intervals and risk assessment.";
 
-            var response = await _aiService.QueryRateOptimization(enterpriseData, query);
-            
+            var response = await _aiService!.QueryRateOptimization(enterpriseData, query);
+
             if (response.Success)
             {
                 return new RateOptimizationResult
@@ -250,8 +250,8 @@ namespace WileyBudgetManagement.Services.Calculations
                           recommend assistance programs, and suggest rate adjustment strategies
                           to maintain service accessibility while ensuring revenue adequacy.";
 
-            var response = await _aiService.ProcessGeneralQuery(query, enterpriseData);
-            
+            var response = await _aiService!.ProcessGeneralQuery(query, enterpriseData);
+
             if (response.Success)
             {
                 return new AffordabilityAnalysisResult
@@ -284,8 +284,8 @@ namespace WileyBudgetManagement.Services.Calculations
                           regulatory changes, and market conditions. Provide monthly projections
                           with confidence intervals and scenario analysis (optimistic, realistic, pessimistic).";
 
-            var response = await _aiService.QueryRevenueForecast(enterpriseData, query);
-            
+            var response = await _aiService!.QueryRevenueForecast(enterpriseData, query);
+
             if (response.Success)
             {
                 return new RevenueForecastResult
@@ -317,8 +317,8 @@ namespace WileyBudgetManagement.Services.Calculations
                           financial reserve mandates, customer protection rules, and reporting obligations.
                           Identify any compliance gaps and recommend corrective actions.";
 
-            var response = await _aiService.ProcessGeneralQuery(query, enterpriseData);
-            
+            var response = await _aiService!.ProcessGeneralQuery(query, enterpriseData);
+
             if (response.Success)
             {
                 return new ComplianceCheckResult
@@ -343,7 +343,7 @@ namespace WileyBudgetManagement.Services.Calculations
         {
             // Parse AI response for rate recommendations
             var rates = new List<OptimizedRate>();
-            
+
             // Simple extraction - in production, use more sophisticated parsing
             if (analysis.Contains("recommend") && analysis.Contains("$"))
             {
@@ -357,7 +357,7 @@ namespace WileyBudgetManagement.Services.Calculations
                     ConfidenceLevel = 0.8m
                 });
             }
-            
+
             return rates;
         }
 

@@ -13,7 +13,7 @@ static class Program
     ///  The main entry point for the application.
     /// </summary>
     [STAThread]
-    static void Main()
+    static void Main(string[] args)
     {
         // Set up global exception handling
         Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
@@ -54,8 +54,25 @@ static class Program
 
             Console.WriteLine("Creating Test Runner...");
 
-            // Launch the TestRunner instead of the main application form
-            Application.Run(new TestRunner());
+            if (args.Length > 0)
+            {
+                switch (args[0].ToLower())
+                {
+                    case "/testtrash":
+                        Application.Run(new TestRunner());
+                        break;
+                    case "/testwater":
+                        Application.Run(new WaterTestRunner());
+                        break;
+                    default:
+                        Application.Run(new DashboardForm());
+                        break;
+                }
+            }
+            else
+            {
+                Application.Run(new DashboardForm());
+            }
 
             Console.WriteLine("Application ended normally");
         }

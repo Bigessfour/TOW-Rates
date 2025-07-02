@@ -81,7 +81,7 @@ namespace WileyBudgetManagement.Services
                 {
                     var aiResponse = JsonConvert.DeserializeObject<dynamic>(responseText);
                     var analysisText = aiResponse?.choices?[0]?.message?.content?.ToString() ?? "No response available";
-                    
+
                     // Track usage for cost management
                     var usage = ExtractUsageData(aiResponse);
                     _usageTracker.RecordUsage("grok-3-beta", usage);
@@ -93,7 +93,7 @@ namespace WileyBudgetManagement.Services
                         ExecutionTimeMs = (int)executionTime,
                         Timestamp = DateTime.Now,
                         Query = query,
-                        EnterpriseScope = enterpriseData.Scope,
+                        EnterpriseScope = enterpriseData?.Scope ?? string.Empty,
                         Usage = usage
                     };
                 }
@@ -154,7 +154,7 @@ namespace WileyBudgetManagement.Services
                         FinancialImpact = ParseFinancialImpact(response.Analysis),
                         Recommendations = ExtractRecommendations(response.Analysis ?? string.Empty),
                         RiskAssessment = ExtractRiskAssessment(response.Analysis ?? string.Empty),
-                        FullAnalysis = response.Analysis,
+                        FullAnalysis = response.Analysis ?? string.Empty,
                         ExecutionTimeMs = response.ExecutionTimeMs
                     };
                 }
@@ -218,7 +218,7 @@ namespace WileyBudgetManagement.Services
                 {
                     var aiResponse = JsonConvert.DeserializeObject<dynamic>(responseText);
                     var analysisText = aiResponse?.choices?[0]?.message?.content?.ToString() ?? "No response available";
-                    
+
                     var usage = ExtractUsageData(aiResponse);
                     _usageTracker.RecordUsage("grok-3-beta", usage);
 
@@ -287,7 +287,7 @@ namespace WileyBudgetManagement.Services
             };
 
             using var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
-            
+
             if (!response.IsSuccessStatusCode)
             {
                 yield return new StreamingResponse
@@ -303,16 +303,16 @@ namespace WileyBudgetManagement.Services
             using var reader = new System.IO.StreamReader(stream);
 
             var buffer = new StringBuilder();
-            
+
             while (!reader.EndOfStream)
             {
                 var line = await reader.ReadLineAsync();
-                
+
                 if (string.IsNullOrEmpty(line) || !line.StartsWith("data: "))
                     continue;
 
                 var data = line.Substring(6); // Remove "data: " prefix
-                
+
                 if (data == "[DONE]")
                 {
                     yield return new StreamingResponse
@@ -565,8 +565,8 @@ Focus on practical machine learning insights that give this rural community hope
                 return new MLFinancialInsights
                 {
                     Success = false,
-                    HopeBasedRecommendations = new List<string> 
-                    { 
+                    HopeBasedRecommendations = new List<string>
+                    {
                         "Technology hiccups happen, but your town's survival instinct is stronger than any system.",
                         "Focus on what you know works - community connections and careful spending."
                     },
@@ -667,8 +667,8 @@ For each opportunity, provide:
                     return new RevenueOpportunityAnalysis
                     {
                         Success = false,
-                        QuickWins = new List<RevenueOpportunity> 
-                        { 
+                        QuickWins = new List<RevenueOpportunity>
+                        {
                             new RevenueOpportunity { Name = "Review utility rates - many rural towns under-charge", EstimatedRevenue = 5000, Difficulty = 2 }
                         },
                         Error = "Revenue analysis temporarily unavailable - check with neighboring towns about shared services."
@@ -680,8 +680,8 @@ For each opportunity, provide:
                 return new RevenueOpportunityAnalysis
                 {
                     Success = false,
-                    QuickWins = new List<RevenueOpportunity> 
-                    { 
+                    QuickWins = new List<RevenueOpportunity>
+                    {
                         new RevenueOpportunity { Name = "Community audit of expenses - residents often find savings", EstimatedRevenue = 2500, Difficulty = 1 }
                     },
                     Error = $"Analysis temporarily down: {ex.Message}"
@@ -787,8 +787,8 @@ For each prediction:
                     {
                         Success = false,
                         EncouragingMessage = "Even without AI predictions, your community's track record shows you can handle whatever comes your way.",
-                        PreventionActions = new List<string> 
-                        { 
+                        PreventionActions = new List<string>
+                        {
                             "Keep a small emergency fund if possible",
                             "Build relationships with neighboring towns",
                             "Document what works for future reference"
@@ -803,8 +803,8 @@ For each prediction:
                 {
                     Success = false,
                     EncouragingMessage = "Rural towns have survived many challenges before - your community's wisdom is your best predictor.",
-                    PreventionActions = new List<string> 
-                    { 
+                    PreventionActions = new List<string>
+                    {
                         "Focus on maintaining essential services",
                         "Keep communication lines open with residents",
                         "Plan for seasonal challenges you know are coming"
@@ -1291,7 +1291,7 @@ Please provide practical guidance that considers:
         private string DetectDocumentType(string analysis)
         {
             var lowerAnalysis = analysis.ToLower();
-            
+
             if (lowerAnalysis.Contains("budget") || lowerAnalysis.Contains("expenditure"))
                 return "Budget Report";
             if (lowerAnalysis.Contains("rate") && lowerAnalysis.Contains("schedule"))
@@ -1302,7 +1302,7 @@ Please provide practical guidance that considers:
                 return "Financial Chart";
             if (lowerAnalysis.Contains("invoice") || lowerAnalysis.Contains("bill"))
                 return "Invoice/Bill";
-            
+
             return "Financial Document";
         }
 
@@ -1312,10 +1312,10 @@ Please provide practical guidance that considers:
         private Dictionary<string, decimal> ExtractFinancialData(string analysis)
         {
             var data = new Dictionary<string, decimal>();
-            
+
             // Use regex to extract monetary values
             var dollarMatches = System.Text.RegularExpressions.Regex.Matches(
-                analysis, @"\$([0-9,]+(?:\.[0-9]{2})?)", 
+                analysis, @"\$([0-9,]+(?:\.[0-9]{2})?)",
                 System.Text.RegularExpressions.RegexOptions.IgnoreCase);
 
             var keywordMap = new Dictionary<string, string[]>
@@ -1332,7 +1332,7 @@ Please provide practical guidance that considers:
                 {
                     var context = GetMatchContext(analysis, match.Index, 50);
                     var category = ClassifyAmount(context, keywordMap);
-                    
+
                     if (!string.IsNullOrEmpty(category))
                     {
                         data[category] = value;
@@ -1353,7 +1353,7 @@ Please provide practical guidance that considers:
         private string ClassifyAmount(string context, Dictionary<string, string[]> keywordMap)
         {
             var lowerContext = context.ToLower();
-            
+
             foreach (var category in keywordMap)
             {
                 if (category.Value.Any(keyword => lowerContext.Contains(keyword)))
@@ -1361,7 +1361,7 @@ Please provide practical guidance that considers:
                     return category.Key;
                 }
             }
-            
+
             return string.Empty;
         }
 
@@ -1386,21 +1386,21 @@ Please provide practical guidance that considers:
 
                 return statusCode switch
                 {
-                    System.Net.HttpStatusCode.TooManyRequests => 
+                    System.Net.HttpStatusCode.TooManyRequests =>
                         $"Rate limit exceeded. Please wait before making another request. {errorMessage}",
-                    System.Net.HttpStatusCode.BadRequest when errorType == "invalid_request_error" => 
+                    System.Net.HttpStatusCode.BadRequest when errorType == "invalid_request_error" =>
                         $"Invalid request format or parameters. {errorMessage}",
-                    System.Net.HttpStatusCode.BadRequest when errorMessage?.Contains("content_policy") == true => 
+                    System.Net.HttpStatusCode.BadRequest when errorMessage?.Contains("content_policy") == true =>
                         $"Content policy violation. Please review your query content. {errorMessage}",
-                    System.Net.HttpStatusCode.BadRequest when errorMessage?.Contains("max_tokens") == true => 
+                    System.Net.HttpStatusCode.BadRequest when errorMessage?.Contains("max_tokens") == true =>
                         $"Token limit exceeded. Please reduce query length or max_tokens setting. {errorMessage}",
-                    System.Net.HttpStatusCode.Unauthorized => 
+                    System.Net.HttpStatusCode.Unauthorized =>
                         "Authentication failed. Please check your XAI_API_KEY environment variable.",
-                    System.Net.HttpStatusCode.Forbidden => 
+                    System.Net.HttpStatusCode.Forbidden =>
                         "Access denied. Your API key may not have sufficient permissions.",
-                    System.Net.HttpStatusCode.ServiceUnavailable => 
+                    System.Net.HttpStatusCode.ServiceUnavailable =>
                         "XAI service temporarily unavailable. Please try again in a few moments.",
-                    System.Net.HttpStatusCode.InternalServerError => 
+                    System.Net.HttpStatusCode.InternalServerError =>
                         "XAI internal server error. Please try again or contact support if the issue persists.",
                     _ => errorMessage ?? $"Unexpected error: {statusCode}"
                 };
@@ -1436,8 +1436,8 @@ Please provide practical guidance that considers:
         private string ExtractQuickTakeaway(string analysis)
         {
             var lines = analysis.Split('\n');
-            var takeawayLine = lines.FirstOrDefault(l => 
-                l.ToLower().Contains("bottom line") || 
+            var takeawayLine = lines.FirstOrDefault(l =>
+                l.ToLower().Contains("bottom line") ||
                 l.ToLower().Contains("in short") ||
                 l.ToLower().Contains("simply put") ||
                 l.Contains("takeaway", StringComparison.OrdinalIgnoreCase));
@@ -1474,14 +1474,14 @@ Please provide practical guidance that considers:
         private string DetermineConfidenceLevel(string analysis)
         {
             var lowerAnalysis = analysis.ToLower();
-            
+
             if (lowerAnalysis.Contains("definitely") || lowerAnalysis.Contains("clearly") || lowerAnalysis.Contains("certainly"))
                 return "High Confidence";
             if (lowerAnalysis.Contains("likely") || lowerAnalysis.Contains("probably") || lowerAnalysis.Contains("should"))
                 return "Good Confidence";
             if (lowerAnalysis.Contains("might") || lowerAnalysis.Contains("could") || lowerAnalysis.Contains("consider"))
                 return "Moderate Confidence";
-            
+
             return "General Guidance";
         }
 
@@ -1491,8 +1491,8 @@ Please provide practical guidance that considers:
         private string ExtractRecommendation(string guidance)
         {
             var lines = guidance.Split('\n');
-            var recommendLine = lines.FirstOrDefault(l => 
-                l.ToLower().Contains("recommend") || 
+            var recommendLine = lines.FirstOrDefault(l =>
+                l.ToLower().Contains("recommend") ||
                 l.ToLower().Contains("suggest") ||
                 l.ToLower().Contains("best option"));
 
@@ -1505,8 +1505,8 @@ Please provide practical guidance that considers:
         private string ExtractReasoning(string guidance)
         {
             var lines = guidance.Split('\n');
-            var reasoningLines = lines.Where(l => 
-                l.ToLower().Contains("because") || 
+            var reasoningLines = lines.Where(l =>
+                l.ToLower().Contains("because") ||
                 l.ToLower().Contains("since") ||
                 l.ToLower().Contains("reason")).ToList();
 
@@ -1523,8 +1523,8 @@ Please provide practical guidance that considers:
 
             foreach (var line in lines)
             {
-                if (line.ToLower().Contains("warning") || 
-                    line.ToLower().Contains("caution") || 
+                if (line.ToLower().Contains("warning") ||
+                    line.ToLower().Contains("caution") ||
                     line.ToLower().Contains("avoid") ||
                     line.ToLower().Contains("careful"))
                 {
@@ -1541,8 +1541,8 @@ Please provide practical guidance that considers:
         private string ExtractResidentImpact(string guidance)
         {
             var lines = guidance.Split('\n');
-            var impactLine = lines.FirstOrDefault(l => 
-                l.ToLower().Contains("resident") || 
+            var impactLine = lines.FirstOrDefault(l =>
+                l.ToLower().Contains("resident") ||
                 l.ToLower().Contains("citizen") ||
                 l.ToLower().Contains("community"));
 
@@ -1563,35 +1563,35 @@ Please provide practical guidance that considers:
 
             var pattern = new StringBuilder();
             pattern.AppendLine("Historical Financial Patterns:");
-            
+
             // Analyze revenue trends
             var revenuePattern = AnalyzeRevenueTrend(history);
             pattern.AppendLine($"Revenue Trend: {revenuePattern}");
-            
+
             // Analyze expense patterns
             var expensePattern = AnalyzeExpenseTrend(history);
             pattern.AppendLine($"Expense Trend: {expensePattern}");
-            
+
             // Identify seasonal patterns
             var seasonalPattern = IdentifySeasonalPatterns(history);
             pattern.AppendLine($"Seasonal Patterns: {seasonalPattern}");
-            
+
             // Current situation context
             pattern.AppendLine($"\nCurrent Situation: Budget ${current.TotalBudget:N0}, Serving {current.CustomerBase} residents");
-            
+
             return pattern.ToString();
         }
 
         private string AnalyzeRevenueTrend(List<HistoricalFinancialRecord> history)
         {
             if (history.Count < 2) return "Insufficient data for trend analysis";
-            
+
             var recent = history.TakeLast(3).Select(h => h.TotalRevenue).ToList();
             var older = history.Take(3).Select(h => h.TotalRevenue).ToList();
-            
+
             var recentAvg = recent.Average();
             var olderAvg = older.Average();
-            
+
             if (recentAvg > olderAvg * 1.05m) return "Increasing revenue trend";
             if (recentAvg < olderAvg * 0.95m) return "Declining revenue trend";
             return "Stable revenue trend";
@@ -1600,13 +1600,13 @@ Please provide practical guidance that considers:
         private string AnalyzeExpenseTrend(List<HistoricalFinancialRecord> history)
         {
             if (history.Count < 2) return "Insufficient expense data";
-            
+
             var recent = history.TakeLast(3).Select(h => h.TotalExpenses).ToList();
             var older = history.Take(3).Select(h => h.TotalExpenses).ToList();
-            
+
             var recentAvg = recent.Average();
             var olderAvg = older.Average();
-            
+
             if (recentAvg > olderAvg * 1.1m) return "Rapidly increasing expenses";
             if (recentAvg > olderAvg * 1.05m) return "Moderately increasing expenses";
             return "Controlled expense growth";
@@ -1615,21 +1615,21 @@ Please provide practical guidance that considers:
         private string IdentifySeasonalPatterns(List<HistoricalFinancialRecord> history)
         {
             var patterns = new List<string>();
-            
+
             // Group by month to identify patterns
             var monthlyData = history.GroupBy(h => h.Date.Month).ToList();
-            
+
             if (monthlyData.Any(g => g.Key >= 11 || g.Key <= 2)) // Winter months
             {
                 var winterExpenses = monthlyData.Where(g => g.Key >= 11 || g.Key <= 2)
                     .SelectMany(g => g).Average(h => h.TotalExpenses);
                 var summerExpenses = monthlyData.Where(g => g.Key >= 5 && g.Key <= 9)
                     .SelectMany(g => g).Average(h => h.TotalExpenses);
-                
+
                 if (winterExpenses > summerExpenses * 1.2m)
                     patterns.Add("Higher winter expenses (likely snow removal/heating)");
             }
-            
+
             return patterns.Any() ? string.Join(", ", patterns) : "No clear seasonal patterns identified";
         }
 
@@ -1901,7 +1901,7 @@ Key Concerns: {string.Join(", ", trends.KeyConcerns)}";
         {
             var quickWins = new List<RevenueOpportunity>();
             var lines = analysis.Split('\n');
-            
+
             foreach (var line in lines)
             {
                 if (line.Contains("quick") && line.Contains("win"))
@@ -2112,7 +2112,7 @@ Key Concerns: {string.Join(", ", trends.KeyConcerns)}";
         private string CalculateOverallRisk(List<RiskPrediction> allRisks)
         {
             if (!allRisks.Any()) return "Low";
-            
+
             var avgRisk = allRisks.Average(r => r.Probability);
             if (avgRisk < 3) return "Low";
             if (avgRisk < 6) return "Moderate";

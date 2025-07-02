@@ -18,6 +18,15 @@ using SkiaSharp;
 
 namespace WileyBudgetManagement.Forms
 {
+    public class WaterValidationResult
+    {
+        public List<string> Errors { get; set; } = new List<string>();
+        public List<string> Warnings { get; set; } = new List<string>();
+        public int TotalTests { get; set; }
+        public int PassedTests { get; set; }
+        public bool IsValid => !Errors.Any();
+    }
+
     public partial class WaterInput : Form
     {
         private SfDataGrid waterDataGrid = null!;
@@ -55,6 +64,78 @@ namespace WileyBudgetManagement.Forms
             InitializeCharts();
             LoadWaterData();
             SetupValidation();
+        }
+
+        public int CountTotalValidationRules()
+        {
+            // This method provides a static count of all possible validation checks
+            // for a single row and the global checks.
+            int perRowRules = 0;
+
+            // From ValidationHelper.ValidateSanitationDistrict("Water")
+            perRowRules += 10; // Account, Label, Section, Budget, MonthlyInput, YTD, %Budget, Usage, Rate, SeasonalAdj
+
+            // From ValidationHelper.ValidateBusinessRules
+            perRowRules += 3; // BudgetRemaining, %Budget calc, MonthlyInput variance
+
+            // From ValidateWaterSpecificRules
+            perRowRules += 6; // Account prefix, Section name, Usage negative, Usage high, Seasonal factor, Quality budget
+
+            return perRowRules;
+        }
+
+        public WaterValidationResult GetValidationResults()
+        {
+            var result = new WaterValidationResult();
+            try
+            {
+                int perRowRuleCount = CountTotalValidationRules();
+                int globalRuleCount = 3; // Budget Imbalance, Infrastructure allocation, Quality allocation
+                int totalPossibleTests = waterData.Count * perRowRuleCount + globalRuleCount;
+                int passedTests = 0;
+
+                for (int i = 0; i < waterData.Count; i++)
+                {
+                    var district = waterData[i];
+                    CalculateFields(district);
+
+                    var rowPrefix = $"Row {i + 1} ({district.Account}): ";
+                    int initialErrorCount = result.Errors.Count;
+                    int initialWarningCount = result.Warnings.Count;
+
+                    // Use comprehensive validation helper
+                    var fieldValidation = ValidationHelper.ValidateSanitationDistrict(district, "Water");
+                    var businessValidation = ValidationHelper.ValidateBusinessRules(district);
+
+                    result.Errors.AddRange(fieldValidation.Errors.Select(e => $"{rowPrefix}{e.Message}"));
+                    result.Warnings.AddRange(fieldValidation.Warnings.Select(w => $"{rowPrefix}{w.Message}"));
+                    result.Errors.AddRange(businessValidation.Errors.Select(e => $"{rowPrefix}{e.Message}"));
+                    result.Warnings.AddRange(businessValidation.Warnings.Select(w => $"{rowPrefix}{w.Message}"));
+
+                    // Water-specific validations
+                    ValidateWaterSpecificRules(district, rowPrefix, result.Errors, result.Warnings);
+
+                    int finalErrorCount = result.Errors.Count;
+                    int finalWarningCount = result.Warnings.Count;
+                    int rulesFailedThisRow = (finalErrorCount - initialErrorCount) + (finalWarningCount - initialWarningCount);
+                    passedTests += (perRowRuleCount - rulesFailedThisRow);
+                }
+
+                // Global validations
+                int initialGlobalWarningCount = result.Warnings.Count;
+                ValidateWaterGlobalRules(result.Warnings);
+                int finalGlobalWarningCount = result.Warnings.Count;
+                int globalRulesFailed = finalGlobalWarningCount - initialGlobalWarningCount;
+                passedTests += (globalRuleCount - globalRulesFailed);
+
+                result.TotalTests = totalPossibleTests;
+                result.PassedTests = passedTests;
+            }
+            catch (Exception ex)
+            {
+                result.Errors.Add($"An unexpected error occurred during validation: {ex.Message}");
+            }
+            return result;
         }
 
         private void InitializeControls()
@@ -899,52 +980,6 @@ namespace WileyBudgetManagement.Forms
             SaveWaterDataAsync();
         }
 
-        private void ValidateAllData()
-        {
-            var allErrors = new List<string>();
-            var allWarnings = new List<string>();
-
-            for (int i = 0; i < waterData.Count; i++)
-            {
-                var district = waterData[i];
-                var rowPrefix = $"Row {i + 1} ({district.Account}): ";
-
-                // Use comprehensive validation helper
-                var fieldValidation = ValidationHelper.ValidateSanitationDistrict(district, "Water");
-                var businessValidation = ValidationHelper.ValidateBusinessRules(district);
-
-                // Collect validation errors and warnings
-                foreach (var error in fieldValidation.Errors)
-                {
-                    allErrors.Add($"{rowPrefix}{error.Message}");
-                }
-
-                foreach (var warning in fieldValidation.Warnings)
-                {
-                    allWarnings.Add($"{rowPrefix}{warning.Message}");
-                }
-
-                foreach (var error in businessValidation.Errors)
-                {
-                    allErrors.Add($"{rowPrefix}{error.Message}");
-                }
-
-                foreach (var warning in businessValidation.Warnings)
-                {
-                    allWarnings.Add($"{rowPrefix}{warning.Message}");
-                }
-
-                // Water-specific validations
-                ValidateWaterSpecificRules(district, rowPrefix, allErrors, allWarnings);
-            }
-
-            // Global validations
-            ValidateWaterGlobalRules(allWarnings);
-
-            // Display validation results
-            DisplayValidationResults(allErrors, allWarnings);
-        }
-
         private void ValidateWaterSpecificRules(SanitationDistrict district, string rowPrefix, List<string> errors, List<string> warnings)
         {
             // Water-specific account validation
@@ -1007,9 +1042,9 @@ namespace WileyBudgetManagement.Forms
 
             // Check infrastructure allocation
             decimal infrastructureCosts = waterData?.Where(d => d.Section == "Infrastructure").Sum(d => d.CurrentFYBudget) ?? 0;
-            decimal totalBudget = totalRevenue + totalExpenses;
+            decimal totalBudget = totalExpenses; // Use total expenses as the base for allocation percentage
 
-            if (infrastructureCosts < totalBudget * 0.15m)
+            if (totalBudget > 0 && (infrastructureCosts / totalBudget) < 0.15m)
             {
                 warnings.Add("Infrastructure allocation may be too low (recommended: at least 15% of total budget)");
             }
@@ -1017,10 +1052,16 @@ namespace WileyBudgetManagement.Forms
             // Check quality assurance allocation
             decimal qualityCosts = waterData?.Where(d => d.Section == "Quality").Sum(d => d.CurrentFYBudget) ?? 0;
 
-            if (qualityCosts < totalBudget * 0.05m)
+            if (totalBudget > 0 && (qualityCosts / totalBudget) < 0.05m)
             {
                 warnings.Add("Quality assurance allocation may be too low (recommended: at least 5% of total budget)");
             }
+        }
+
+        private void ValidateAllData()
+        {
+            var validationResult = GetValidationResults();
+            DisplayValidationResults(validationResult.Errors, validationResult.Warnings);
         }
 
         private void DisplayValidationResults(List<string> errors, List<string> warnings)

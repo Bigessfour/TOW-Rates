@@ -597,12 +597,18 @@ namespace WileyBudgetManagement.Forms
                 // Another spacer
                 var spacer2 = UIStyleManager.CreateSpacer(25);
 
+                // Validation Health Panel
+                var validationHealthPanel = CreateValidationHealthPanel();
+                validationHealthPanel.Dock = DockStyle.Top;
+                validationHealthPanel.Height = 180;
+
                 // Enhanced instructions panel
                 var instructionsPanel = CreateEnhancedInstructionsPanel();
                 instructionsPanel.Dock = DockStyle.Fill;
 
                 // Add all components in proper order (bottom to top for dock top)
                 overviewPanel.Controls.Add(instructionsPanel);  // Fill (bottom)
+                overviewPanel.Controls.Add(validationHealthPanel);
                 overviewPanel.Controls.Add(spacer2);           // Spacer
                 overviewPanel.Controls.Add(statsPanel);        // Stats
                 overviewPanel.Controls.Add(spacer1);           // Spacer
@@ -648,6 +654,142 @@ namespace WileyBudgetManagement.Forms
                     contentPanel.Controls.Add(errorLabel);
                 }
             }
+        }
+
+        private Panel CreateValidationHealthPanel()
+        {
+            var panel = new Panel
+            {
+                BackColor = Color.White,
+                Padding = new Padding(15)
+            };
+
+            var title = new Label
+            {
+                Text = "Enterprise Validation Health",
+                Font = new Font("Segoe UI", 16, FontStyle.Bold),
+                ForeColor = UIStyleManager.NeutralDark,
+                Dock = DockStyle.Top,
+                Height = 40,
+                AutoSize = false,
+                TextAlign = ContentAlignment.MiddleLeft
+            };
+            panel.Controls.Add(title);
+
+            var container = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                FlowDirection = FlowDirection.LeftToRight,
+                WrapContents = true,
+                Padding = new Padding(10),
+                AutoSize = false
+            };
+            panel.Controls.Add(container);
+
+            // Load the validation statuses
+            LoadValidationStatuses(container);
+
+            return panel;
+        }
+
+        private void LoadValidationStatuses(FlowLayoutPanel container)
+        {
+            // Trash Enterprise
+            using (var trashForm = new TrashInput())
+            {
+                var trashResult = trashForm.GetValidationResults();
+                var trashCard = CreateValidationStatCard("Trash Enterprise", trashResult.Errors, trashResult.Warnings, trashResult.TotalTests, trashResult.PassedTests);
+                container.Controls.Add(trashCard);
+            }
+
+            // Water Enterprise
+            using (var waterForm = new WaterInput())
+            {
+                var waterResult = waterForm.GetValidationResults();
+                var waterCard = CreateValidationStatCard("Water Enterprise", waterResult.Errors, waterResult.Warnings, waterResult.TotalTests, waterResult.PassedTests);
+                container.Controls.Add(waterCard);
+            }
+
+            // Placeholder for Sanitation Enterprise
+            var sanitationCard = CreateValidationStatCard("Sewer Enterprise", new List<string>(), new List<string> { "Pending initial review" }, 100, 0);
+            container.Controls.Add(sanitationCard);
+
+            // Placeholder for Apartments Enterprise
+            var apartmentsCard = CreateValidationStatCard("Apartments Enterprise", new List<string>(), new List<string> { "Pending initial review" }, 100, 0);
+            container.Controls.Add(apartmentsCard);
+        }
+
+        private Panel CreateValidationStatCard(string title, List<string> errors, List<string> warnings, int totalTests, int passedTests)
+        {
+            var card = new Panel
+            {
+                Size = new Size(220, 120),
+                BackColor = UIStyleManager.Surface,
+                Margin = new Padding(8),
+                Padding = new Padding(15)
+            };
+
+            UIStyleManager.ApplyCardPanelStyle(card);
+
+            var titleLabel = new Label
+            {
+                Text = title,
+                Font = UIStyleManager.SectionFont,
+                ForeColor = UIStyleManager.NeutralMedium,
+                Dock = DockStyle.Top,
+                Height = 25,
+                AutoSize = false
+            };
+
+            var progressBar = new ProgressBar
+            {
+                Dock = DockStyle.Bottom,
+                Height = 10,
+                Style = ProgressBarStyle.Continuous
+            };
+
+            var valueLabel = new Label
+            {
+                Font = new Font(UIStyleManager.PrimaryFontFamily, 18, FontStyle.Bold),
+                Dock = DockStyle.Fill,
+                TextAlign = ContentAlignment.MiddleCenter,
+                AutoSize = false
+            };
+
+            if (totalTests > 0)
+            {
+                int percentage = (int)Math.Round((double)passedTests / totalTests * 100);
+                valueLabel.Text = $"{percentage}%";
+                progressBar.Value = percentage;
+
+                if (percentage == 100)
+                {
+                    valueLabel.ForeColor = UIStyleManager.StatusSuccess;
+                    progressBar.ForeColor = UIStyleManager.StatusSuccess;
+                }
+                else if (percentage > 80)
+                {
+                    valueLabel.ForeColor = UIStyleManager.StatusWarning;
+                    progressBar.ForeColor = UIStyleManager.StatusWarning;
+                }
+                else
+                {
+                    valueLabel.ForeColor = UIStyleManager.StatusError;
+                    progressBar.ForeColor = UIStyleManager.StatusError;
+                }
+            }
+            else
+            {
+                valueLabel.Text = "N/A";
+                valueLabel.ForeColor = UIStyleManager.NeutralMedium;
+                progressBar.Value = 0;
+            }
+
+            card.Controls.Add(valueLabel);
+            card.Controls.Add(titleLabel);
+            card.Controls.Add(progressBar);
+
+            return card;
         }
 
         private Panel CreateEnhancedQuickStatsPanel()

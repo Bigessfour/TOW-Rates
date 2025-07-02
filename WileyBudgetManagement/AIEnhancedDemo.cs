@@ -14,51 +14,51 @@ namespace WileyBudgetManagement.Forms
     /// </summary>
     public partial class AIEnhancedDemo : Form
     {
-        private WileyAIFinanceManager _financeManager;
-        private EnterpriseContext _sampleEnterprise;
+        private WileyAIFinanceManager? _financeManager;
+        private EnterpriseContext? _sampleEnterprise;
 
-        // UI Controls
-        private TabControl tabControl;
-        private TabPage rateOptimizationTab;
-        private TabPage affordabilityTab;
-        private TabPage anomalyTab;
-        private TabPage forecastTab;
-        private TabPage complianceTab;
-        private TabPage queryTab;
+        // Tab controls
+        private TabControl? tabControl;
+        private TabPage? rateOptimizationTab;
+        private TabPage? affordabilityTab;
+        private TabPage? anomalyTab;
+        private TabPage? forecastTab;
+        private TabPage? complianceTab;
+        private TabPage? queryTab;
 
-        // Rate Optimization Controls
-        private NumericUpDown targetRevenueInput;
-        private NumericUpDown maxIncreaseInput;
-        private Button optimizeRatesButton;
-        private RichTextBox rateResultsText;
+        // Rate optimization controls
+        private NumericUpDown? targetRevenueInput;
+        private NumericUpDown? maxIncreaseInput;
+        private Button? optimizeRatesButton;
+        private TextBox? rateResultsText;
 
-        // Affordability Controls
-        private NumericUpDown proposedRateInput;
-        private Button analyzeAffordabilityButton;
-        private RichTextBox affordabilityResultsText;
+        // Affordability controls
+        private NumericUpDown? proposedRateInput;
+        private Button? analyzeAffordabilityButton;
+        private TextBox? affordabilityResultsText;
 
-        // Anomaly Detection Controls
-        private Button detectAnomaliesButton;
-        private RichTextBox anomalyResultsText;
+        // Anomaly detection controls
+        private Button? detectAnomaliesButton;
+        private TextBox? anomalyResultsText;
 
-        // Revenue Forecast Controls
-        private NumericUpDown forecastMonthsInput;
-        private Button forecastRevenueButton;
-        private RichTextBox forecastResultsText;
+        // Revenue forecast controls
+        private NumericUpDown? forecastMonthsInput;
+        private Button? forecastRevenueButton;
+        private TextBox? forecastResultsText;
 
-        // Compliance Controls
-        private Button checkComplianceButton;
-        private RichTextBox complianceResultsText;
+        // Compliance controls
+        private Button? checkComplianceButton;
+        private TextBox? complianceResultsText;
 
-        // AI Query Controls
-        private TextBox questionInput;
-        private Button askQuestionButton;
-        private RichTextBox queryResultsText;
+        // General query controls
+        private TextBox? questionInput;
+        private Button? askQuestionButton;
+        private TextBox? queryResultsText;
 
-        // Status and Progress
-        private StatusStrip statusStrip;
-        private ToolStripStatusLabel statusLabel;
-        private ToolStripProgressBar progressBar;
+        // Status controls
+        private StatusStrip? statusStrip;
+        private ToolStripStatusLabel? statusLabel;
+        private ToolStripProgressBar? progressBar;
 
         public AIEnhancedDemo()
         {
@@ -88,12 +88,12 @@ namespace WileyBudgetManagement.Forms
             CreateQueryTab();
 
             // Add tabs to control
-            tabControl.TabPages.Add(rateOptimizationTab);
-            tabControl.TabPages.Add(affordabilityTab);
-            tabControl.TabPages.Add(anomalyTab);
-            tabControl.TabPages.Add(forecastTab);
-            tabControl.TabPages.Add(complianceTab);
-            tabControl.TabPages.Add(queryTab);
+            tabControl!.TabPages.Add(rateOptimizationTab!);
+            tabControl.TabPages.Add(affordabilityTab!);
+            tabControl.TabPages.Add(anomalyTab!);
+            tabControl.TabPages.Add(forecastTab!);
+            tabControl.TabPages.Add(complianceTab!);
+            tabControl.TabPages.Add(queryTab!);
 
             // Create status strip
             statusStrip = new StatusStrip();
@@ -110,19 +110,19 @@ namespace WileyBudgetManagement.Forms
         private void CreateRateOptimizationTab()
         {
             rateOptimizationTab = new TabPage("Rate Optimization");
-            
+
             var panel = new Panel { Dock = DockStyle.Fill, Padding = new Padding(10) };
-            
+
             // Input controls
             var inputPanel = new Panel { Height = 120, Dock = DockStyle.Top };
-            
-            var targetRevenueLabel = new Label 
-            { 
+
+            var targetRevenueLabel = new Label
+            {
                 Text = "Target Annual Revenue:",
                 Location = new Point(10, 15),
                 Size = new Size(150, 23)
             };
-            
+
             targetRevenueInput = new NumericUpDown
             {
                 Location = new Point(170, 12),
@@ -133,13 +133,13 @@ namespace WileyBudgetManagement.Forms
                 ThousandsSeparator = true
             };
 
-            var maxIncreaseLabel = new Label 
-            { 
+            var maxIncreaseLabel = new Label
+            {
                 Text = "Max Rate Increase %:",
                 Location = new Point(10, 45),
                 Size = new Size(150, 23)
             };
-            
+
             maxIncreaseInput = new NumericUpDown
             {
                 Location = new Point(170, 42),
@@ -165,11 +165,12 @@ namespace WileyBudgetManagement.Forms
             inputPanel.Controls.Add(optimizeRatesButton);
 
             // Results display
-            rateResultsText = new RichTextBox
+            rateResultsText = new TextBox
             {
                 Dock = DockStyle.Fill,
                 Font = new Font("Consolas", 9),
-                ReadOnly = true
+                ReadOnly = true,
+                Multiline = true
             };
 
             panel.Controls.Add(inputPanel);
@@ -180,18 +181,18 @@ namespace WileyBudgetManagement.Forms
         private void CreateAffordabilityTab()
         {
             affordabilityTab = new TabPage("Affordability Analysis");
-            
+
             var panel = new Panel { Dock = DockStyle.Fill, Padding = new Padding(10) };
-            
+
             var inputPanel = new Panel { Height = 90, Dock = DockStyle.Top };
-            
-            var proposedRateLabel = new Label 
-            { 
+
+            var proposedRateLabel = new Label
+            {
                 Text = "Proposed Monthly Rate:",
                 Location = new Point(10, 15),
                 Size = new Size(150, 23)
             };
-            
+
             proposedRateInput = new NumericUpDown
             {
                 Location = new Point(170, 12),
@@ -214,11 +215,12 @@ namespace WileyBudgetManagement.Forms
             inputPanel.Controls.Add(proposedRateInput);
             inputPanel.Controls.Add(analyzeAffordabilityButton);
 
-            affordabilityResultsText = new RichTextBox
+            affordabilityResultsText = new TextBox
             {
                 Dock = DockStyle.Fill,
                 Font = new Font("Consolas", 9),
-                ReadOnly = true
+                ReadOnly = true,
+                Multiline = true
             };
 
             panel.Controls.Add(inputPanel);
@@ -229,9 +231,9 @@ namespace WileyBudgetManagement.Forms
         private void CreateAnomalyDetectionTab()
         {
             anomalyTab = new TabPage("Anomaly Detection");
-            
+
             var panel = new Panel { Dock = DockStyle.Fill, Padding = new Padding(10) };
-            
+
             var inputPanel = new Panel { Height = 60, Dock = DockStyle.Top };
 
             detectAnomaliesButton = new Button
@@ -245,11 +247,12 @@ namespace WileyBudgetManagement.Forms
 
             inputPanel.Controls.Add(detectAnomaliesButton);
 
-            anomalyResultsText = new RichTextBox
+            anomalyResultsText = new TextBox
             {
                 Dock = DockStyle.Fill,
                 Font = new Font("Consolas", 9),
-                ReadOnly = true
+                ReadOnly = true,
+                Multiline = true
             };
 
             panel.Controls.Add(inputPanel);
@@ -260,18 +263,18 @@ namespace WileyBudgetManagement.Forms
         private void CreateForecastTab()
         {
             forecastTab = new TabPage("Revenue Forecast");
-            
+
             var panel = new Panel { Dock = DockStyle.Fill, Padding = new Padding(10) };
-            
+
             var inputPanel = new Panel { Height = 90, Dock = DockStyle.Top };
-            
-            var forecastMonthsLabel = new Label 
-            { 
+
+            var forecastMonthsLabel = new Label
+            {
                 Text = "Forecast Months:",
                 Location = new Point(10, 15),
                 Size = new Size(150, 23)
             };
-            
+
             forecastMonthsInput = new NumericUpDown
             {
                 Location = new Point(170, 12),
@@ -294,11 +297,12 @@ namespace WileyBudgetManagement.Forms
             inputPanel.Controls.Add(forecastMonthsInput);
             inputPanel.Controls.Add(forecastRevenueButton);
 
-            forecastResultsText = new RichTextBox
+            forecastResultsText = new TextBox
             {
                 Dock = DockStyle.Fill,
                 Font = new Font("Consolas", 9),
-                ReadOnly = true
+                ReadOnly = true,
+                Multiline = true
             };
 
             panel.Controls.Add(inputPanel);
@@ -309,9 +313,9 @@ namespace WileyBudgetManagement.Forms
         private void CreateComplianceTab()
         {
             complianceTab = new TabPage("Compliance Check");
-            
+
             var panel = new Panel { Dock = DockStyle.Fill, Padding = new Padding(10) };
-            
+
             var inputPanel = new Panel { Height = 60, Dock = DockStyle.Top };
 
             checkComplianceButton = new Button
@@ -325,11 +329,12 @@ namespace WileyBudgetManagement.Forms
 
             inputPanel.Controls.Add(checkComplianceButton);
 
-            complianceResultsText = new RichTextBox
+            complianceResultsText = new TextBox
             {
                 Dock = DockStyle.Fill,
                 Font = new Font("Consolas", 9),
-                ReadOnly = true
+                ReadOnly = true,
+                Multiline = true
             };
 
             panel.Controls.Add(inputPanel);
@@ -340,18 +345,18 @@ namespace WileyBudgetManagement.Forms
         private void CreateQueryTab()
         {
             queryTab = new TabPage("AI Query");
-            
+
             var panel = new Panel { Dock = DockStyle.Fill, Padding = new Padding(10) };
-            
+
             var inputPanel = new Panel { Height = 90, Dock = DockStyle.Top };
-            
-            var questionLabel = new Label 
-            { 
+
+            var questionLabel = new Label
+            {
                 Text = "Ask AI about your finances:",
                 Location = new Point(10, 15),
                 Size = new Size(200, 23)
             };
-            
+
             questionInput = new TextBox
             {
                 Location = new Point(10, 35),
@@ -372,11 +377,12 @@ namespace WileyBudgetManagement.Forms
             inputPanel.Controls.Add(questionInput);
             inputPanel.Controls.Add(askQuestionButton);
 
-            queryResultsText = new RichTextBox
+            queryResultsText = new TextBox
             {
                 Dock = DockStyle.Fill,
                 Font = new Font("Segoe UI", 9),
-                ReadOnly = true
+                ReadOnly = true,
+                Multiline = true
             };
 
             panel.Controls.Add(inputPanel);
@@ -389,12 +395,12 @@ namespace WileyBudgetManagement.Forms
             try
             {
                 _financeManager = new WileyAIFinanceManager();
-                statusLabel.Text = "AI services initialized successfully";
+                statusLabel!.Text = "AI services initialized successfully";
             }
             catch (Exception ex)
             {
-                statusLabel.Text = $"AI unavailable - using basic calculations: {ex.Message}";
-                MessageBox.Show($"AI services could not be initialized. The application will use basic mathematical calculations instead.\n\nError: {ex.Message}", 
+                statusLabel!.Text = $"AI unavailable - using basic calculations: {ex.Message}";
+                MessageBox.Show($"AI services could not be initialized. The application will use basic mathematical calculations instead.\n\nError: {ex.Message}",
                     "AI Service Notice", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
@@ -422,73 +428,60 @@ namespace WileyBudgetManagement.Forms
 
         #region Event Handlers
 
-        private async void OptimizeRatesButton_Click(object sender, EventArgs e)
+        private async void OptimizeRatesButton_Click(object? sender, EventArgs e)
         {
-            await ExecuteWithProgress(async () =>
-            {
-                var goals = new RateOptimizationGoals
-                {
-                    TargetRevenue = targetRevenueInput.Value,
-                    MaxRateIncreasePercent = maxIncreaseInput.Value / 100m,
-                    CustomerRetentionTarget = 0.95m,
-                    AffordabilityConstraint = 0.04m
-                };
+            var targetRevenue = targetRevenueInput!.Value;
+            var maxIncrease = maxIncreaseInput!.Value / 100m;
 
-                var result = await _financeManager.OptimizeUtilityRates(_sampleEnterprise, goals);
-                DisplayRateOptimizationResult(result);
+            var result = await _financeManager!.OptimizeUtilityRates(_sampleEnterprise!, new RateOptimizationGoals
+            {
+                TargetRevenue = targetRevenue,
+                MaxRateIncreasePercent = maxIncrease,
+                CustomerRetentionTarget = 0.95m,
+                AffordabilityConstraint = 0.04m
             });
+
+            rateResultsText!.Text = FormatRateOptimizationResult(result);
         }
 
-        private async void AnalyzeAffordabilityButton_Click(object sender, EventArgs e)
+        private async void AnalyzeAffordabilityButton_Click(object? sender, EventArgs e)
         {
-            await ExecuteWithProgress(async () =>
-            {
-                var result = await _financeManager.AnalyzeCustomerAffordability(_sampleEnterprise, proposedRateInput.Value);
-                DisplayAffordabilityResult(result);
-            });
+            var proposedRate = proposedRateInput!.Value;
+            var result = await _financeManager!.AnalyzeCustomerAffordability(_sampleEnterprise!, proposedRate);
+            affordabilityResultsText!.Text = FormatAffordabilityResult(result);
         }
 
-        private async void DetectAnomaliesButton_Click(object sender, EventArgs e)
+        private async void DetectAnomaliesButton_Click(object? sender, EventArgs e)
         {
-            await ExecuteWithProgress(async () =>
-            {
-                var result = await _financeManager.DetectFinancialAnomalies(_sampleEnterprise);
-                DisplayAnomalyResult(result);
-            });
+            var result = await _financeManager!.DetectFinancialAnomalies(_sampleEnterprise!);
+            anomalyResultsText!.Text = FormatAnomalyResult(result);
         }
 
-        private async void ForecastRevenueButton_Click(object sender, EventArgs e)
+        private async void ForecastRevenueButton_Click(object? sender, EventArgs e)
         {
-            await ExecuteWithProgress(async () =>
-            {
-                var result = await _financeManager.ForecastRevenue(_sampleEnterprise, (int)forecastMonthsInput.Value);
-                DisplayForecastResult(result);
-            });
+            var months = (int)forecastMonthsInput!.Value;
+            var result = await _financeManager!.ForecastRevenue(_sampleEnterprise!, months);
+            forecastResultsText!.Text = FormatForecastResult(result);
         }
 
-        private async void CheckComplianceButton_Click(object sender, EventArgs e)
+        private async void CheckComplianceButton_Click(object? sender, EventArgs e)
         {
-            await ExecuteWithProgress(async () =>
-            {
-                var result = await _financeManager.CheckRegulatoryCompliance(_sampleEnterprise);
-                DisplayComplianceResult(result);
-            });
+            var result = await _financeManager!.CheckRegulatoryCompliance(_sampleEnterprise!);
+            complianceResultsText!.Text = FormatComplianceResult(result);
         }
 
-        private async void AskQuestionButton_Click(object sender, EventArgs e)
+        private async void AskQuestionButton_Click(object? sender, EventArgs e)
         {
-            await ExecuteWithProgress(async () =>
-            {
-                var answer = await _financeManager.AskFinancialQuestion(questionInput.Text, _sampleEnterprise);
-                queryResultsText.Text = $"Question: {questionInput.Text}\n\nAI Response:\n{answer}";
-            });
+            var question = questionInput!.Text;
+            var result = await _financeManager!.AskFinancialQuestion(question, _sampleEnterprise!);
+            queryResultsText!.Text = result;
         }
 
         #endregion
 
         #region Result Display Methods
 
-        private void DisplayRateOptimizationResult(RateOptimizationResult result)
+        private string FormatRateOptimizationResult(RateOptimizationResult result)
         {
             var text = $"RATE OPTIMIZATION RESULTS\n";
             text += $"Status: {(result.Success ? "✅ Success" : "❌ Failed")}\n";
@@ -500,24 +493,9 @@ namespace WileyBudgetManagement.Forms
                 foreach (var rate in result.OptimizedRates)
                 {
                     text += $"• {rate.ServiceType}: ${rate.RecommendedRate:F2}/month\n";
-                    text += $"  Current: ${rate.CurrentRate:F2} → Change: ${rate.RateChange:+F2;-F2;0} ({rate.PercentageChange:+P1;-P1;0%})\n";
+                    text += $"  Current: ${rate.CurrentRate:F2} → Change: ${rate.RateChange:+F2;-F2;0}\n";
                     text += $"  Justification: {rate.Justification}\n";
                     text += $"  Confidence: {rate.ConfidenceLevel:P1}\n\n";
-                }
-
-                if (result.RevenueProjection != null)
-                {
-                    text += "REVENUE IMPACT:\n";
-                    text += $"• Projected Annual Revenue: ${result.RevenueProjection.ProjectedAnnualRevenue:N2}\n";
-                    text += $"• Revenue Change: ${result.RevenueProjection.RevenueChange:+N2;-N2;0}\n\n";
-                }
-
-                if (result.CustomerImpactAssessment != null)
-                {
-                    text += "CUSTOMER IMPACT:\n";
-                    text += $"• Average Monthly Increase: ${result.CustomerImpactAssessment.AverageMonthlyIncrease:F2}\n";
-                    text += $"• Percentage Increase: {result.CustomerImpactAssessment.PercentageIncrease:P1}\n";
-                    text += $"• Estimated Customer Loss: {result.CustomerImpactAssessment.EstimatedCustomerLoss:F0} customers\n\n";
                 }
 
                 if (!string.IsNullOrEmpty(result.AIAnalysis))
@@ -531,10 +509,10 @@ namespace WileyBudgetManagement.Forms
                 text += $"Error: {result.Error}\n";
             }
 
-            rateResultsText.Text = text;
+            return text;
         }
 
-        private void DisplayAffordabilityResult(AffordabilityAnalysisResult result)
+        private string FormatAffordabilityResult(AffordabilityAnalysisResult result)
         {
             var text = $"CUSTOMER AFFORDABILITY ANALYSIS\n";
             text += $"Status: {(result.Success ? "✅ Success" : "❌ Failed")}\n";
@@ -544,10 +522,7 @@ namespace WileyBudgetManagement.Forms
             {
                 text += "AFFORDABILITY METRICS:\n";
                 text += $"• Overall Affordability Score: {result.OverallAffordabilityScore:P1}\n";
-                text += $"• Affordability Rating: {result.AffordabilityRating}\n";
-                text += $"• Vulnerable Customers: {result.VulnerableCustomerPercentage:P1}\n";
-                text += $"• Average Monthly Burden: ${result.AverageMonthlyBurden:F2}\n";
-                text += $"• Percentage of Income: {result.PercentageOfIncome:P2}\n\n";
+                text += $"• Vulnerable Customers: {result.VulnerableCustomerPercentage:P1}\n\n";
 
                 if (result.RecommendedAssistancePrograms?.Count > 0)
                 {
@@ -561,7 +536,7 @@ namespace WileyBudgetManagement.Forms
 
                 if (!string.IsNullOrEmpty(result.SocioeconomicImpactAnalysis))
                 {
-                    text += "SOCIOECONOMIC IMPACT ANALYSIS:\n";
+                    text += "ANALYSIS:\n";
                     text += result.SocioeconomicImpactAnalysis + "\n";
                 }
             }
@@ -570,10 +545,10 @@ namespace WileyBudgetManagement.Forms
                 text += $"Error: {result.Error}\n";
             }
 
-            affordabilityResultsText.Text = text;
+            return text;
         }
 
-        private void DisplayAnomalyResult(AnomalyDetectionResult result)
+        private string FormatAnomalyResult(AnomalyDetectionResult result)
         {
             var text = $"FINANCIAL ANOMALY DETECTION\n";
             text += $"Status: {(result.Success ? "✅ Success" : "❌ Failed")}\n";
@@ -581,28 +556,6 @@ namespace WileyBudgetManagement.Forms
 
             if (result.Success)
             {
-                text += $"DETECTED ANOMALIES: {result.DetectedAnomalies?.Count ?? 0}\n\n";
-
-                if (result.DetectedAnomalies?.Count > 0)
-                {
-                    foreach (var anomaly in result.DetectedAnomalies)
-                    {
-                        text += $"• {anomaly.Date:MMM yyyy}: ${anomaly.Value:N2}\n";
-                        text += $"  Expected: ${anomaly.ExpectedValue:N2}, Deviation: ${anomaly.Deviation:N2}\n";
-                        text += $"  Type: {anomaly.AnomalyType}, Severity: {anomaly.SeverityScore:F1}\n";
-                        text += $"  {anomaly.Description}\n\n";
-                    }
-                }
-
-                if (result.SeverityAssessment != null)
-                {
-                    text += "SEVERITY ASSESSMENT:\n";
-                    text += $"• Overall Severity: {result.SeverityAssessment.OverallSeverity}\n";
-                    text += $"• Critical: {result.SeverityAssessment.CriticalAnomalies}, ";
-                    text += $"High: {result.SeverityAssessment.HighSeverityAnomalies}, ";
-                    text += $"Medium: {result.SeverityAssessment.MediumSeverityAnomalies}\n\n";
-                }
-
                 if (!string.IsNullOrEmpty(result.AnomalyAnalysis))
                 {
                     text += "ANALYSIS:\n";
@@ -614,10 +567,10 @@ namespace WileyBudgetManagement.Forms
                 text += $"Error: {result.Error}\n";
             }
 
-            anomalyResultsText.Text = text;
+            return text;
         }
 
-        private void DisplayForecastResult(RevenueForecastResult result)
+        private string FormatForecastResult(RevenueForecastResult result)
         {
             var text = $"REVENUE FORECAST\n";
             text += $"Status: {(result.Success ? "✅ Success" : "❌ Failed")}\n";
@@ -632,37 +585,16 @@ namespace WileyBudgetManagement.Forms
                     text += $"• {month:MMM yyyy}: ${result.MonthlyProjections[i]:N2}\n";
                 }
                 text += "\n";
-
-                if (result.ScenarioAnalysis != null)
-                {
-                    text += "SCENARIO ANALYSIS (Year 1 Total):\n";
-                    var optimistic = result.ScenarioAnalysis.OptimisticScenario.Take(12).Sum();
-                    var realistic = result.ScenarioAnalysis.RealisticScenario.Take(12).Sum();
-                    var pessimistic = result.ScenarioAnalysis.PessimisticScenario.Take(12).Sum();
-                    
-                    text += $"• Optimistic: ${optimistic:N2}\n";
-                    text += $"• Realistic: ${realistic:N2}\n";
-                    text += $"• Pessimistic: ${pessimistic:N2}\n\n";
-                }
-
-                if (result.KeyAssumptions?.Count > 0)
-                {
-                    text += "KEY ASSUMPTIONS:\n";
-                    foreach (var assumption in result.KeyAssumptions)
-                    {
-                        text += $"• {assumption}\n";
-                    }
-                }
             }
             else
             {
                 text += $"Error: {result.Error}\n";
             }
 
-            forecastResultsText.Text = text;
+            return text;
         }
 
-        private void DisplayComplianceResult(ComplianceCheckResult result)
+        private string FormatComplianceResult(ComplianceCheckResult result)
         {
             var text = $"REGULATORY COMPLIANCE CHECK\n";
             text += $"Status: {(result.Success ? "✅ Success" : "❌ Failed")}\n";
@@ -708,7 +640,7 @@ namespace WileyBudgetManagement.Forms
                 text += $"Error: {result.Error}\n";
             }
 
-            complianceResultsText.Text = text;
+            return text;
         }
 
         #endregion
@@ -717,36 +649,22 @@ namespace WileyBudgetManagement.Forms
         {
             try
             {
-                statusLabel.Text = "Processing...";
-                progressBar.Visible = true;
+                statusLabel!.Text = "Processing...";
+                progressBar!.Visible = true;
                 progressBar.Style = ProgressBarStyle.Marquee;
-                
-                // Disable all buttons during operation
-                foreach (Control control in this.Controls)
-                {
-                    if (control is Button button)
-                        button.Enabled = false;
-                }
 
                 await operation();
 
-                statusLabel.Text = "Operation completed successfully";
+                statusLabel!.Text = "Operation completed successfully";
             }
             catch (Exception ex)
             {
-                statusLabel.Text = $"Error: {ex.Message}";
+                statusLabel!.Text = $"Error: {ex.Message}";
                 MessageBox.Show($"An error occurred: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally
             {
-                progressBar.Visible = false;
-                
-                // Re-enable all buttons
-                foreach (Control control in this.Controls)
-                {
-                    if (control is Button button)
-                        button.Enabled = true;
-                }
+                progressBar!.Visible = false;
             }
         }
 

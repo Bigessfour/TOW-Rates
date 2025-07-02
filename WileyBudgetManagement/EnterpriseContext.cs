@@ -17,9 +17,19 @@ namespace WileyBudgetManagement.Services
         public string Name { get; set; } = string.Empty;
 
         /// <summary>
+        /// Municipality name (e.g., "Town of Wiley")
+        /// </summary>
+        public string Municipality { get; set; } = "Town of Wiley";
+
+        /// <summary>
         /// Description of the data scope and context
         /// </summary>
         public string Scope { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Indicates whether this enterprise has rate study data available
+        /// </summary>
+        public bool HasRateStudyData { get; set; } = false;
 
         /// <summary>
         /// Total budget amount for this enterprise
@@ -113,6 +123,8 @@ namespace WileyBudgetManagement.Services
 
         public EnterpriseContext()
         {
+            Municipality = "Town of Wiley";
+            HasRateStudyData = false;
             InitializeKeyMetrics();
         }
 
@@ -183,6 +195,9 @@ namespace WileyBudgetManagement.Services
                         Accounts.Where(a => a.TimeOfUseFactor > 0).Average(a => a.TimeOfUseFactor) : 1.0m;
                     ReserveTarget = Accounts.Sum(a => a.ReserveTarget);
                 }
+
+                // Set HasRateStudyData based on available data
+                HasRateStudyData = Accounts.Any(a => a.RequiredRate > 0 || a.MonthlyUsage > 0 || a.CustomerAffordabilityIndex > 0);
             }
 
             LastUpdated = DateTime.Now;
@@ -195,8 +210,10 @@ namespace WileyBudgetManagement.Services
         {
             CalculateMetrics();
 
-            return $@"Enterprise: {Name}
+            return $@"Municipality: {Municipality}
+Enterprise: {Name}
 Scope: {Scope}
+Has Rate Study Data: {HasRateStudyData}
 Customer Base: {CustomerBase:N0} customers
 Total Budget: ${TotalBudget:N2}
 Total Revenue: ${TotalRevenue:N2}

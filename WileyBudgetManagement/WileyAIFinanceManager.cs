@@ -14,8 +14,8 @@ namespace WileyBudgetManagement.Services
     /// </summary>
     public class WileyAIFinanceManager : IDisposable
     {
-        private readonly AIEnhancedQueryService _aiQueryService;
-        private readonly AIEnhancedCalculations _enhancedCalculations;
+        private readonly AIEnhancedQueryService? _aiQueryService;
+        private readonly AIEnhancedCalculations? _enhancedCalculations;
         private readonly bool _isAIAvailable;
 
         public WileyAIFinanceManager()
@@ -45,7 +45,7 @@ namespace WileyBudgetManagement.Services
             if (_enhancedCalculations != null)
             {
                 var result = await _enhancedCalculations.OptimizeRates(enterpriseData, goals);
-                
+
                 // Add AI narrative analysis if available
                 if (_isAIAvailable && _aiQueryService != null)
                 {
