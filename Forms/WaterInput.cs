@@ -9,6 +9,12 @@ using Syncfusion.WinForms.DataGrid.Events;
 using Syncfusion.Data;
 using WileyBudgetManagement.Models;
 using WileyBudgetManagement.Database;
+using LiveChartsCore;
+using LiveChartsCore.SkiaSharpView;
+using LiveChartsCore.SkiaSharpView.WinForms;
+using LiveChartsCore.Defaults;
+using LiveChartsCore.SkiaSharpView.Painting;
+using SkiaSharp;
 
 namespace WileyBudgetManagement.Forms
 {
@@ -24,6 +30,16 @@ namespace WileyBudgetManagement.Forms
         private ComboBox sectionFilterCombo = null!;
         private Label statusLabel = null!;
 
+        // Chart controls
+        private TabControl chartTabControl = null!;
+        private CartesianChart budgetVsActualChart = null!;
+        private CartesianChart scenarioComparisonChart = null!;
+        private PieChart sectionDistributionChart = null!;
+        private CartesianChart monthlyTrendChart = null!;
+        private CartesianChart usageVsRevenueChart = null!;
+        private Button refreshChartsButton = null!;
+        private Panel chartPanel = null!;
+
         public WaterInput()
         {
             _databaseManager = new DatabaseManager();
@@ -32,14 +48,15 @@ namespace WileyBudgetManagement.Forms
             InitializeComponent();
             InitializeControls();
             InitializeWaterDataGrid();
-            LoadWaterDataAsync();
+            InitializeCharts();
+            LoadWaterData();
             SetupValidation();
         }
 
         private void InitializeControls()
         {
             this.Text = "Water District - Revenue & Expenses";
-            this.Size = new Size(1400, 800);
+            this.Size = new Size(1600, 1000); // Increased size for charts
             this.StartPosition = FormStartPosition.CenterScreen;
 
             // Create toolbar panel
@@ -80,18 +97,28 @@ namespace WileyBudgetManagement.Forms
             };
             deleteRowButton.Click += DeleteRowButton_Click;
 
+            // Refresh Charts button
+            refreshChartsButton = new Button
+            {
+                Text = "Refresh Charts",
+                Size = new Size(100, 30),
+                Location = new Point(330, 10),
+                BackColor = Color.LightSalmon
+            };
+            refreshChartsButton.Click += RefreshChartsButton_Click;
+
             // Section filter
             var filterLabel = new Label
             {
                 Text = "Filter by Section:",
-                Location = new Point(350, 15),
+                Location = new Point(450, 15),
                 Size = new Size(100, 20)
             };
 
             sectionFilterCombo = new ComboBox
             {
                 Size = new Size(150, 25),
-                Location = new Point(450, 12),
+                Location = new Point(550, 12),
                 DropDownStyle = ComboBoxStyle.DropDownList
             };
             sectionFilterCombo.Items.AddRange(new[] { "All", "Revenue", "Operating", "Infrastructure", "Quality" });
@@ -102,20 +129,45 @@ namespace WileyBudgetManagement.Forms
             statusLabel = new Label
             {
                 Text = "Ready",
-                Location = new Point(620, 15),
+                Location = new Point(720, 15),
                 Size = new Size(300, 20),
                 ForeColor = Color.DarkGreen
             };
 
             toolbarPanel.Controls.AddRange(new Control[] {
-                saveButton, addRowButton, deleteRowButton, filterLabel, sectionFilterCombo, statusLabel
+                saveButton, addRowButton, deleteRowButton, refreshChartsButton, filterLabel, sectionFilterCombo, statusLabel
             });
 
             this.Controls.Add(toolbarPanel);
+
+            // Create main split container for data grid and charts
+            var mainSplitContainer = new SplitContainer
+            {
+                Dock = DockStyle.Fill,
+                Orientation = Orientation.Horizontal,
+                SplitterDistance = 400,
+                Panel1MinSize = 300,
+                Panel2MinSize = 200
+            };
+
+            this.Controls.Add(mainSplitContainer);
+
+            // Chart panel for the bottom section
+            chartPanel = new Panel
+            {
+                Dock = DockStyle.Fill,
+                BackColor = Color.White
+            };
+
+            mainSplitContainer.Panel2.Controls.Add(chartPanel);
         }
 
         private void InitializeWaterDataGrid()
         {
+            // Get the split container from the parent controls
+            var mainSplitContainer = this.Controls.OfType<SplitContainer>().FirstOrDefault();
+            if (mainSplitContainer == null) return;
+
             waterDataGrid = new SfDataGrid()
             {
                 Dock = DockStyle.Fill,
@@ -157,7 +209,443 @@ namespace WileyBudgetManagement.Forms
             // Handle cell value changes for real-time calculations
             waterDataGrid.CurrentCellEndEdit += WaterDataGrid_CurrentCellEndEdit;
 
-            this.Controls.Add(waterDataGrid);
+            mainSplitContainer.Panel1.Controls.Add(waterDataGrid);
+        }
+
+        private void InitializeCharts()
+        {
+            // Create tab control for different chart views
+            chartTabControl = new TabControl
+            {
+                Dock = DockStyle.Fill
+            };
+
+            // Budget vs Actual Chart Tab
+            var budgetTab = new TabPage("Budget vs Actual");
+            budgetVsActualChart = new CartesianChart
+            {
+                Dock = DockStyle.Fill,
+                BackColor = Color.White
+            };
+            budgetTab.Controls.Add(budgetVsActualChart);
+            chartTabControl.TabPages.Add(budgetTab);
+
+            // Scenario Comparison Chart Tab
+            var scenarioTab = new TabPage("Scenario Analysis");
+            scenarioComparisonChart = new CartesianChart
+            {
+                Dock = DockStyle.Fill,
+                BackColor = Color.White
+            };
+            scenarioTab.Controls.Add(scenarioComparisonChart);
+            chartTabControl.TabPages.Add(scenarioTab);
+
+            // Section Distribution Chart Tab
+            var distributionTab = new TabPage("Section Distribution");
+            sectionDistributionChart = new PieChart
+            {
+                Dock = DockStyle.Fill,
+                BackColor = Color.White
+            };
+            distributionTab.Controls.Add(sectionDistributionChart);
+            chartTabControl.TabPages.Add(distributionTab);
+
+            // Monthly Trend Chart Tab
+            var trendTab = new TabPage("Monthly Trends");
+            monthlyTrendChart = new CartesianChart
+            {
+                Dock = DockStyle.Fill,
+                BackColor = Color.White
+            };
+            trendTab.Controls.Add(monthlyTrendChart);
+            chartTabControl.TabPages.Add(trendTab);
+
+            // Usage vs Revenue Chart Tab
+            var usageTab = new TabPage("Usage vs Revenue");
+            usageVsRevenueChart = new CartesianChart
+            {
+                Dock = DockStyle.Fill,
+                BackColor = Color.White
+            };
+            usageTab.Controls.Add(usageVsRevenueChart);
+            chartTabControl.TabPages.Add(usageTab);
+
+            chartPanel.Controls.Add(chartTabControl);
+
+            // Initial chart setup
+            SetupBudgetVsActualChart();
+            SetupScenarioComparisonChart();
+            SetupSectionDistributionChart();
+            SetupMonthlyTrendChart();
+            SetupUsageVsRevenueChart();
+        }
+
+        private void SetupBudgetVsActualChart()
+        {
+            var budgetSeries = new ColumnSeries<decimal>
+            {
+                Name = "Budget",
+                Values = new List<decimal>(),
+                Fill = new SolidColorPaint(SKColors.SteelBlue)
+            };
+
+            var actualSeries = new ColumnSeries<decimal>
+            {
+                Name = "YTD Spending",
+                Values = new List<decimal>(),
+                Fill = new SolidColorPaint(SKColors.Orange)
+            };
+
+            budgetVsActualChart.Series = new ISeries[] { budgetSeries, actualSeries };
+
+            budgetVsActualChart.XAxes = new List<LiveChartsCore.Kernel.Sketches.ICartesianAxis>
+            {
+                new Axis
+                {
+                    Name = "Account",
+                    Labels = new List<string>()
+                }
+            };
+
+            budgetVsActualChart.YAxes = new List<LiveChartsCore.Kernel.Sketches.ICartesianAxis>
+            {
+                new Axis
+                {
+                    Name = "Amount ($)",
+                    Labeler = value => value.ToString("C0")
+                }
+            };
+        }
+
+        private void SetupScenarioComparisonChart()
+        {
+            var scenario1Series = new ColumnSeries<decimal>
+            {
+                Name = "Scenario 1 (Treatment Plant)",
+                Values = new List<decimal>(),
+                Fill = new SolidColorPaint(SkiaSharp.SKColors.Green)
+            };
+
+            var scenario2Series = new ColumnSeries<decimal>
+            {
+                Name = "Scenario 2 (Pipeline)",
+                Values = new List<decimal>(),
+                Fill = new SolidColorPaint(SkiaSharp.SKColors.Blue)
+            };
+
+            var scenario3Series = new ColumnSeries<decimal>
+            {
+                Name = "Scenario 3 (Quality)",
+                Values = new List<decimal>(),
+                Fill = new SolidColorPaint(SkiaSharp.SKColors.Purple)
+            };
+
+            scenarioComparisonChart.Series = new ISeries[] { scenario1Series, scenario2Series, scenario3Series };
+
+            scenarioComparisonChart.XAxes = new List<LiveChartsCore.Kernel.Sketches.ICartesianAxis>
+            {
+                new Axis
+                {
+                    Name = "Account",
+                    Labels = new List<string>()
+                }
+            };
+
+            scenarioComparisonChart.YAxes = new List<LiveChartsCore.Kernel.Sketches.ICartesianAxis>
+            {
+                new Axis
+                {
+                    Name = "Monthly Cost ($)",
+                    Labeler = value => value.ToString("C0")
+                }
+            };
+        }
+
+        private void SetupSectionDistributionChart()
+        {
+            var revenueSeries = new PieSeries<decimal>
+            {
+                Name = "Revenue",
+                Values = new List<decimal> { 0 },
+                Fill = new SolidColorPaint(SkiaSharp.SKColors.LightGreen)
+            };
+
+            var operatingSeries = new PieSeries<decimal>
+            {
+                Name = "Operating",
+                Values = new List<decimal> { 0 },
+                Fill = new SolidColorPaint(SkiaSharp.SKColors.LightBlue)
+            };
+
+            var infrastructureSeries = new PieSeries<decimal>
+            {
+                Name = "Infrastructure",
+                Values = new List<decimal> { 0 },
+                Fill = new SolidColorPaint(SkiaSharp.SKColors.Orange)
+            };
+
+            var qualitySeries = new PieSeries<decimal>
+            {
+                Name = "Quality",
+                Values = new List<decimal> { 0 },
+                Fill = new SolidColorPaint(SkiaSharp.SKColors.Red)
+            };
+
+            sectionDistributionChart.Series = new ISeries[] { revenueSeries, operatingSeries, infrastructureSeries, qualitySeries };
+        }
+
+        private void SetupMonthlyTrendChart()
+        {
+            var monthlyInputSeries = new LineSeries<decimal>
+            {
+                Name = "Monthly Input",
+                Values = new List<decimal>(),
+                Fill = null,
+                Stroke = new SolidColorPaint(SkiaSharp.SKColors.Blue) { StrokeThickness = 3 },
+                GeometryFill = new SolidColorPaint(SkiaSharp.SKColors.Blue),
+                GeometryStroke = new SolidColorPaint(SkiaSharp.SKColors.White) { StrokeThickness = 2 }
+            };
+
+            var requiredRateSeries = new LineSeries<decimal>
+            {
+                Name = "Required Rate",
+                Values = new List<decimal>(),
+                Fill = null,
+                Stroke = new SolidColorPaint(SkiaSharp.SKColors.Red) { StrokeThickness = 3 },
+                GeometryFill = new SolidColorPaint(SkiaSharp.SKColors.Red),
+                GeometryStroke = new SolidColorPaint(SkiaSharp.SKColors.White) { StrokeThickness = 2 }
+            };
+
+            monthlyTrendChart.Series = new ISeries[] { monthlyInputSeries, requiredRateSeries };
+
+            monthlyTrendChart.XAxes = new List<LiveChartsCore.Kernel.Sketches.ICartesianAxis>
+            {
+                new Axis
+                {
+                    Name = "Account",
+                    Labels = new List<string>()
+                }
+            };
+
+            monthlyTrendChart.YAxes = new List<LiveChartsCore.Kernel.Sketches.ICartesianAxis>
+            {
+                new Axis
+                {
+                    Name = "Amount ($)",
+                    Labeler = value => value.ToString("C0")
+                }
+            };
+        }
+
+        private void SetupUsageVsRevenueChart()
+        {
+            var usagePoints = new List<ObservablePoint>();
+            var scatterSeries = new ScatterSeries<ObservablePoint>
+            {
+                Name = "Usage vs Revenue",
+                Values = usagePoints,
+                Fill = new SolidColorPaint(SkiaSharp.SKColors.SteelBlue),
+                Stroke = new SolidColorPaint(SkiaSharp.SKColors.DarkBlue) { StrokeThickness = 2 }
+            };
+
+            usageVsRevenueChart.Series = new ISeries[] { scatterSeries };
+
+            usageVsRevenueChart.XAxes = new List<LiveChartsCore.Kernel.Sketches.ICartesianAxis>
+            {
+                new Axis
+                {
+                    Name = "Monthly Usage (Gallons)",
+                    Labeler = value => (value / 1000000).ToString("N1") + "M"
+                }
+            };
+
+            usageVsRevenueChart.YAxes = new List<LiveChartsCore.Kernel.Sketches.ICartesianAxis>
+            {
+                new Axis
+                {
+                    Name = "Monthly Revenue ($)",
+                    Labeler = value => value.ToString("C0")
+                }
+            };
+        }
+
+        private void RefreshChartsButton_Click(object? sender, EventArgs e)
+        {
+            RefreshAllCharts();
+            statusLabel.Text = "Charts refreshed";
+            statusLabel.ForeColor = Color.DarkGreen;
+        }
+
+        private void RefreshAllCharts()
+        {
+            if (waterData == null || !waterData.Any()) return;
+
+            try
+            {
+                RefreshBudgetVsActualChart();
+                RefreshScenarioComparisonChart();
+                RefreshSectionDistributionChart();
+                RefreshMonthlyTrendChart();
+                RefreshUsageVsRevenueChart();
+            }
+            catch (Exception ex)
+            {
+                statusLabel.Text = $"Chart refresh error: {ex.Message}";
+                statusLabel.ForeColor = Color.Red;
+            }
+        }
+
+        private void RefreshBudgetVsActualChart()
+        {
+            var budgetValues = waterData.Select(d => d.CurrentFYBudget).ToList();
+            var actualValues = waterData.Select(d => d.YearToDateSpending).ToList();
+            var labels = waterData.Select(d => d.Account).ToList();
+
+            var budgetSeries = new ColumnSeries<decimal>
+            {
+                Name = "Budget",
+                Values = budgetValues,
+                Fill = new SolidColorPaint(SkiaSharp.SKColors.SteelBlue)
+            };
+
+            var actualSeries = new ColumnSeries<decimal>
+            {
+                Name = "YTD Spending",
+                Values = actualValues,
+                Fill = new SolidColorPaint(SkiaSharp.SKColors.Orange)
+            };
+
+            budgetVsActualChart.Series = new ISeries[] { budgetSeries, actualSeries };
+
+            if (budgetVsActualChart.XAxes.Any())
+            {
+                ((Axis)budgetVsActualChart.XAxes.First()).Labels = labels;
+            }
+        }
+
+        private void RefreshScenarioComparisonChart()
+        {
+            var scenario1Values = waterData.Select(d => d.Scenario1).ToList();
+            var scenario2Values = waterData.Select(d => d.Scenario2).ToList();
+            var scenario3Values = waterData.Select(d => d.Scenario3).ToList();
+            var labels = waterData.Select(d => d.Account).ToList();
+
+            var scenario1Series = new ColumnSeries<decimal>
+            {
+                Name = "Scenario 1 (Treatment Plant)",
+                Values = scenario1Values,
+                Fill = new SolidColorPaint(SkiaSharp.SKColors.Green)
+            };
+
+            var scenario2Series = new ColumnSeries<decimal>
+            {
+                Name = "Scenario 2 (Pipeline)",
+                Values = scenario2Values,
+                Fill = new SolidColorPaint(SkiaSharp.SKColors.Blue)
+            };
+
+            var scenario3Series = new ColumnSeries<decimal>
+            {
+                Name = "Scenario 3 (Quality)",
+                Values = scenario3Values,
+                Fill = new SolidColorPaint(SkiaSharp.SKColors.Purple)
+            };
+
+            scenarioComparisonChart.Series = new ISeries[] { scenario1Series, scenario2Series, scenario3Series };
+
+            if (scenarioComparisonChart.XAxes.Any())
+            {
+                ((Axis)scenarioComparisonChart.XAxes.First()).Labels = labels;
+            }
+        }
+
+        private void RefreshSectionDistributionChart()
+        {
+            var sectionTotals = waterData
+                .GroupBy(d => d.Section)
+                .ToDictionary(g => g.Key, g => g.Sum(d => Math.Abs(d.CurrentFYBudget)));
+
+            var revenueSeries = new PieSeries<decimal>
+            {
+                Name = "Revenue",
+                Values = new List<decimal> { sectionTotals.GetValueOrDefault("Revenue", 0) },
+                Fill = new SolidColorPaint(SkiaSharp.SKColors.LightGreen)
+            };
+
+            var operatingSeries = new PieSeries<decimal>
+            {
+                Name = "Operating",
+                Values = new List<decimal> { sectionTotals.GetValueOrDefault("Operating", 0) },
+                Fill = new SolidColorPaint(SkiaSharp.SKColors.LightBlue)
+            };
+
+            var infrastructureSeries = new PieSeries<decimal>
+            {
+                Name = "Infrastructure",
+                Values = new List<decimal> { sectionTotals.GetValueOrDefault("Infrastructure", 0) },
+                Fill = new SolidColorPaint(SkiaSharp.SKColors.Orange)
+            };
+
+            var qualitySeries = new PieSeries<decimal>
+            {
+                Name = "Quality",
+                Values = new List<decimal> { sectionTotals.GetValueOrDefault("Quality", 0) },
+                Fill = new SolidColorPaint(SkiaSharp.SKColors.Red)
+            };
+
+            sectionDistributionChart.Series = new ISeries[] { revenueSeries, operatingSeries, infrastructureSeries, qualitySeries };
+        }
+
+        private void RefreshMonthlyTrendChart()
+        {
+            var monthlyInputValues = waterData.Select(d => d.MonthlyInput).ToList();
+            var requiredRateValues = waterData.Select(d => d.RequiredRate).ToList();
+            var labels = waterData.Select(d => d.Account).ToList();
+
+            var monthlyInputSeries = new LineSeries<decimal>
+            {
+                Name = "Monthly Input",
+                Values = monthlyInputValues,
+                Fill = null,
+                Stroke = new SolidColorPaint(SkiaSharp.SKColors.Blue) { StrokeThickness = 3 },
+                GeometryFill = new SolidColorPaint(SkiaSharp.SKColors.Blue),
+                GeometryStroke = new SolidColorPaint(SkiaSharp.SKColors.White) { StrokeThickness = 2 }
+            };
+
+            var requiredRateSeries = new LineSeries<decimal>
+            {
+                Name = "Required Rate",
+                Values = requiredRateValues,
+                Fill = null,
+                Stroke = new SolidColorPaint(SkiaSharp.SKColors.Red) { StrokeThickness = 3 },
+                GeometryFill = new SolidColorPaint(SkiaSharp.SKColors.Red),
+                GeometryStroke = new SolidColorPaint(SkiaSharp.SKColors.White) { StrokeThickness = 2 }
+            };
+
+            monthlyTrendChart.Series = new ISeries[] { monthlyInputSeries, requiredRateSeries };
+
+            if (monthlyTrendChart.XAxes.Any())
+            {
+                ((Axis)monthlyTrendChart.XAxes.First()).Labels = labels;
+            }
+        }
+
+        private void RefreshUsageVsRevenueChart()
+        {
+            var usagePoints = waterData
+                .Where(d => d.Section == "Revenue" && d.MonthlyUsage > 0)
+                .Select(d => new ObservablePoint((double)d.MonthlyUsage, (double)d.MonthlyInput))
+                .ToList();
+
+            var scatterSeries = new ScatterSeries<ObservablePoint>
+            {
+                Name = "Usage vs Revenue",
+                Values = usagePoints,
+                Fill = new SolidColorPaint(SkiaSharp.SKColors.SteelBlue),
+                Stroke = new SolidColorPaint(SkiaSharp.SKColors.DarkBlue) { StrokeThickness = 2 }
+            };
+
+            usageVsRevenueChart.Series = new ISeries[] { scatterSeries };
         }
 
         private void WaterDataGrid_CurrentCellEndEdit(object? sender, CurrentCellEndEditEventArgs e)
@@ -170,6 +658,7 @@ namespace WileyBudgetManagement.Forms
                     var district = waterData[rowIndex];
                     CalculateFields(district);
                     RefreshGrid();
+                    RefreshAllCharts(); // Update charts when data changes
                 }
             }
         }
@@ -640,13 +1129,22 @@ namespace WileyBudgetManagement.Forms
             }
         }
 
-        private void LoadWaterDataAsync()
+        private void LoadWaterData()
         {
             try
             {
                 // Initialize with predefined water district data
                 waterData = GetDefaultWaterData();
                 waterDataGrid.DataSource = waterData;
+
+                // Calculate all fields to ensure charts have data
+                foreach (var district in waterData)
+                {
+                    CalculateFields(district);
+                }
+
+                // Initial chart refresh
+                RefreshAllCharts();
 
                 statusLabel.Text = "Default water data loaded";
                 statusLabel.ForeColor = Color.Blue;
@@ -751,11 +1249,11 @@ namespace WileyBudgetManagement.Forms
                 stats["TotalRevenue"] = GetTotalRevenue();
                 stats["TotalExpenses"] = GetTotalExpenses();
                 stats["NetIncome"] = stats["TotalRevenue"] - stats["TotalExpenses"];
-                stats["AverageRequiredRate"] = waterData.Average(d => d.RequiredRate);
-                stats["TotalYTDSpending"] = waterData.Sum(d => d.YearToDateSpending);
-                stats["TotalMonthlyUsage"] = waterData.Sum(d => d.MonthlyUsage);
-                stats["InfrastructureInvestment"] = waterData.Where(d => d.Section == "Infrastructure").Sum(d => d.CurrentFYBudget);
-                stats["QualityInvestment"] = waterData.Where(d => d.Section == "Quality").Sum(d => d.CurrentFYBudget);
+                stats["AverageRequiredRate"] = waterData?.Any() == true ? waterData.Average(d => d.RequiredRate) : 0;
+                stats["TotalYTDSpending"] = waterData?.Sum(d => d.YearToDateSpending) ?? 0;
+                stats["TotalMonthlyUsage"] = waterData?.Sum(d => d.MonthlyUsage) ?? 0;
+                stats["InfrastructureInvestment"] = waterData?.Where(d => d.Section == "Infrastructure").Sum(d => d.CurrentFYBudget) ?? 0;
+                stats["QualityInvestment"] = waterData?.Where(d => d.Section == "Quality").Sum(d => d.CurrentFYBudget) ?? 0;
             }
             catch (Exception)
             {
@@ -763,6 +1261,70 @@ namespace WileyBudgetManagement.Forms
             }
 
             return stats;
+        }
+
+        public void ExportChartSummary(string filePath)
+        {
+            try
+            {
+                using (var writer = new System.IO.StreamWriter(filePath))
+                {
+                    writer.WriteLine("=== Water District Chart Data Summary ===");
+                    writer.WriteLine($"Generated on: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+                    writer.WriteLine();
+
+                    // Summary statistics
+                    var stats = GetWaterSummaryStatistics();
+                    writer.WriteLine("FINANCIAL SUMMARY:");
+                    foreach (var stat in stats)
+                    {
+                        writer.WriteLine($"{stat.Key}: {stat.Value:C}");
+                    }
+                    writer.WriteLine();
+
+                    // Section breakdown
+                    writer.WriteLine("SECTION BREAKDOWN:");
+                    var sectionSummary = waterData.GroupBy(d => d.Section)
+                        .Select(g => new
+                        {
+                            Section = g.Key,
+                            Count = g.Count(),
+                            TotalBudget = g.Sum(d => d.CurrentFYBudget),
+                            TotalYTD = g.Sum(d => d.YearToDateSpending),
+                            AvgScenario1 = g.Average(d => d.Scenario1),
+                            AvgScenario2 = g.Average(d => d.Scenario2),
+                            AvgScenario3 = g.Average(d => d.Scenario3)
+                        });
+
+                    foreach (var section in sectionSummary)
+                    {
+                        writer.WriteLine($"{section.Section}:");
+                        writer.WriteLine($"  Items: {section.Count}");
+                        writer.WriteLine($"  Total Budget: {section.TotalBudget:C}");
+                        writer.WriteLine($"  YTD Spending: {section.TotalYTD:C}");
+                        writer.WriteLine($"  Avg Scenario 1: {section.AvgScenario1:C}");
+                        writer.WriteLine($"  Avg Scenario 2: {section.AvgScenario2:C}");
+                        writer.WriteLine($"  Avg Scenario 3: {section.AvgScenario3:C}");
+                        writer.WriteLine();
+                    }
+
+                    // Chart data points
+                    writer.WriteLine("DETAILED CHART DATA:");
+                    writer.WriteLine("Account,Section,Budget,YTD,Scenario1,Scenario2,Scenario3,RequiredRate,MonthlyUsage");
+                    foreach (var district in waterData)
+                    {
+                        writer.WriteLine($"{district.Account},{district.Section},{district.CurrentFYBudget:F2},{district.YearToDateSpending:F2},{district.Scenario1:F2},{district.Scenario2:F2},{district.Scenario3:F2},{district.RequiredRate:F2},{district.MonthlyUsage:F0}");
+                    }
+                }
+
+                statusLabel.Text = "Chart summary exported successfully";
+                statusLabel.ForeColor = Color.DarkGreen;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error exporting chart summary: {ex.Message}", "Export Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         public void ExportWaterData(string filePath)
