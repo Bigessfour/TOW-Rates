@@ -339,7 +339,7 @@ namespace WileyBudgetManagement.Forms
                 decimal calculatedRate = 0;
                 decimal customerBase = GetTotalCustomerBase();
 
-                if (customerBase <= 0) 
+                if (customerBase <= 0)
                 {
                     district.RequiredRate = 0;
                     return;
@@ -614,7 +614,7 @@ namespace WileyBudgetManagement.Forms
 
             // Check recycling allocation
             decimal recyclingCosts = trashData?.Where(d => d.Section == "Recycling").Sum(d => d.CurrentFYBudget) ?? 0;
-            
+
             if (recyclingCosts < totalBudget * 0.10m)
             {
                 warnings.Add("Recycling allocation may be too low (recommended: at least 10% of total budget)");

@@ -328,7 +328,7 @@ namespace WileyBudgetManagement.Forms
                 decimal calculatedRate = 0;
                 decimal customerBase = GetTotalCustomerBase();
 
-                if (customerBase <= 0) 
+                if (customerBase <= 0)
                 {
                     district.RequiredRate = 0;
                     return;
@@ -592,7 +592,7 @@ namespace WileyBudgetManagement.Forms
 
             // Check quality assurance allocation
             decimal qualityCosts = waterData?.Where(d => d.Section == "Quality").Sum(d => d.CurrentFYBudget) ?? 0;
-            
+
             if (qualityCosts < totalBudget * 0.05m)
             {
                 warnings.Add("Quality assurance allocation may be too low (recommended: at least 5% of total budget)");

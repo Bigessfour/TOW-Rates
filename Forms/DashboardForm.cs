@@ -188,7 +188,7 @@ namespace WileyBudgetManagement.Forms
         private void ShowDashboardOverview()
         {
             contentPanel.Controls.Clear();
-            
+
             var overviewPanel = new Panel
             {
                 Dock = DockStyle.Fill,
@@ -431,7 +431,7 @@ For questions or support, contact the IT department."
 
         private void ShowSettings()
         {
-            MessageBox.Show("Settings functionality will be implemented in a future version.", 
+            MessageBox.Show("Settings functionality will be implemented in a future version.",
                 "Settings", MessageBoxButtons.OK, MessageBoxIcon.Information);
             statusLabel.Text = "Settings - Coming Soon";
         }
@@ -442,19 +442,19 @@ For questions or support, contact the IT department."
             {
                 // Remove previous controls
                 contentPanel.Controls.Clear();
-                
+
                 form.TopLevel = false;
                 form.FormBorderStyle = FormBorderStyle.None;
                 form.Dock = DockStyle.Fill;
                 form.Parent = contentPanel;
-                
+
                 contentPanel.Controls.Add(form);
                 form.Show();
                 form.BringToFront();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading form: {ex.Message}", "Error", 
+                MessageBox.Show($"Error loading form: {ex.Message}", "Error",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
                 statusLabel.Text = "Error loading form";
             }
@@ -506,7 +506,7 @@ For questions or support, contact the IT department."
                 summary += $"Last Update: {DateTime.Now:MM/dd/yyyy HH:mm} | ";
                 summary += $"User: {Environment.UserName} | ";
                 summary += $"Validation: Ready for Review";
-                
+
                 return summary;
             }
             catch (Exception)
