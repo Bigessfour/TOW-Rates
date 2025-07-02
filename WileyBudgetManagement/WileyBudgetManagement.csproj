@@ -13,6 +13,7 @@
     <PackageReference Include="LiveChartsCore.SkiaSharpView.WinForms" Version="2.0.0-rc5.4" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Syncfusion.SfDataGrid.WinForms" Version="26.1.42" />
+    <PackageReference Include="Syncfusion.Chart.Windows" Version="26.1.42" />
     <PackageReference Include="Syncfusion.Tools.Windows" Version="26.1.42" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.6" />
     <Compile Include="..\Models\SanitationDistrict.cs" />
@@ -29,6 +30,7 @@
     <Compile Include="..\Forms\ApartmentsInput.cs" />
     <Compile Include="..\Forms\ApartmentsInput.Designer.cs" />
     <Compile Include="..\Forms\TrashInput.cs" />
+    <Compile Include="..\Forms\TestRunner.cs" />
     <Compile Include="..\Forms\TrashInput.Designer.cs" />
     <Compile Include="..\Forms\SummaryPage.cs" />
     <Compile Include="..\Forms\SummaryPage.Designer.cs" />

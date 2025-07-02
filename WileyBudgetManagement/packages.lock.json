@@ -31,6 +31,18 @@
           "SkiaSharp.Views.Desktop.Common": "3.116.1"
         }
       },
+      "Syncfusion.Chart.Windows": {
+        "type": "Direct",
+        "requested": "[26.1.42, )",
+        "resolved": "26.1.42",
+        "contentHash": "9YwspXZksK3+dQEo26BT/tRyRnfxbB7tNc+M6+sxN0yU+kE/M8mipe4nsoKQTNh77ddwjhzYgggJeqwkbxAfTQ==",
+        "dependencies": {
+          "Syncfusion.Chart.Base": "26.1.42",
+          "Syncfusion.Grouping.Base": "26.1.42",
+          "Syncfusion.Licensing": "26.1.42",
+          "Syncfusion.Shared.Base": "26.1.42"
+        }
+      },
       "Syncfusion.SfDataGrid.WinForms": {
         "type": "Direct",
         "requested": "[26.1.42, )",
@@ -203,6 +215,15 @@
           "SkiaSharp": "3.116.1"
         }
       },
+      "Syncfusion.Chart.Base": {
+        "type": "Transitive",
+        "resolved": "26.1.42",
+        "contentHash": "z7uS6dmrb/JluwynpRr7TSFU8y0ObT/unc++EPdhhgX9+m1LT0j7rAJ5izhX5f7NkSBSY9fSkM+In2+Y5FQX1w==",
+        "dependencies": {
+          "Syncfusion.Licensing": "26.1.42",
+          "Syncfusion.Shared.Base": "26.1.42"
+        }
+      },
       "Syncfusion.Core.WinForms": {
         "type": "Transitive",
         "resolved": "26.1.42",
@@ -238,6 +259,15 @@
         "type": "Transitive",
         "resolved": "26.1.42",
         "contentHash": "X1S/oUo4s99GYI0RUqPMm5OI8OTr1O7HcEpSTuCraVT4kiFEe1bz31EJMxJNAQ6Ce1yKzza+P3v9LuOAmABo8g=="
+      },
+      "Syncfusion.Grouping.Base": {
+        "type": "Transitive",
+        "resolved": "26.1.42",
+        "contentHash": "R18yRXNc67YvqaDVWWGrYHt9vYozu2ffJzADbrz9JHyVfspeqBZ4RiBQjrrEg/tVVSucQ8GjrSyLfya7NAgCMg==",
+        "dependencies": {
+          "Syncfusion.Licensing": "26.1.42",
+          "Syncfusion.Shared.Base": "26.1.42"
+        }
       },
       "Syncfusion.Licensing": {
         "type": "Transitive",

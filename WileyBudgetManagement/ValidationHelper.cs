@@ -20,8 +20,8 @@ namespace WileyBudgetManagement.Forms
             if (account.Length < 3 || account.Length > 10)
                 return false;
 
-            // Check alphanumeric pattern
-            if (!Regex.IsMatch(account, @"^[A-Z0-9]+$"))
+            // Check alphanumeric pattern (allowing for periods)
+            if (!Regex.IsMatch(account, @"^[A-Z0-9.]+$"))
                 return false;
 
             // Check expected prefix if provided
@@ -107,7 +107,7 @@ namespace WileyBudgetManagement.Forms
             string expectedPrefix = category switch
             {
                 "Water" => "W",
-                "Trash" => "T", 
+                "Trash" => "T",
                 "Apartments" => "APT",
                 _ => ""
             };

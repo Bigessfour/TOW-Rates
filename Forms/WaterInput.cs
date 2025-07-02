@@ -46,10 +46,10 @@ namespace WileyBudgetManagement.Forms
             _repository = new SanitationRepository(_databaseManager);
 
             InitializeComponent();
-            
+
             // Apply modern UI styling
             this.ApplyModernStyling();
-            
+
             InitializeControls();
             InitializeWaterDataGrid();
             InitializeCharts();
@@ -142,12 +142,37 @@ namespace WileyBudgetManagement.Forms
             {
                 Dock = DockStyle.Fill,
                 Orientation = Orientation.Horizontal,
-                SplitterDistance = 400,
-                Panel1MinSize = 300,
-                Panel2MinSize = 200
+                Panel1MinSize = 200,
+                Panel2MinSize = 150,
+                // Set SplitterDistance after the container is added and sized
+                SplitterWidth = 4
             };
 
             this.Controls.Add(mainSplitContainer);
+
+            // Set splitter distance safely after the container is added
+            this.Load += (s, e) =>
+            {
+                // Calculate a safe splitter distance: 60% of available height, but respect min sizes
+                var availableHeight = mainSplitContainer.Height;
+                var minTotalHeight = mainSplitContainer.Panel1MinSize + mainSplitContainer.Panel2MinSize + mainSplitContainer.SplitterWidth;
+
+                if (availableHeight > minTotalHeight)
+                {
+                    var proposedDistance = (int)(availableHeight * 0.6);
+                    var maxDistance = availableHeight - mainSplitContainer.Panel2MinSize - mainSplitContainer.SplitterWidth;
+                    var minDistance = mainSplitContainer.Panel1MinSize;
+
+                    // Ensure the distance is within valid bounds
+                    proposedDistance = Math.Max(minDistance, Math.Min(proposedDistance, maxDistance));
+                    mainSplitContainer.SplitterDistance = proposedDistance;
+                }
+                else
+                {
+                    // Fallback: set to minimum for Panel1
+                    mainSplitContainer.SplitterDistance = mainSplitContainer.Panel1MinSize;
+                }
+            };
 
             // Chart panel for the bottom section
             chartPanel = new Panel

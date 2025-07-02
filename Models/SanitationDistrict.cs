@@ -9,6 +9,7 @@ namespace WileyBudgetManagement.Models
             Account = string.Empty;
             Label = string.Empty;
             Section = string.Empty;
+            Notes = string.Empty;
         }
         public string Account { get; set; }
         public string Label { get; set; }
@@ -33,5 +34,8 @@ namespace WileyBudgetManagement.Models
         public decimal QuarterlySummary { get; set; }
         public DateTime EntryDate { get; set; }
         public decimal Total { get; set; }
+        public decimal PriorFYActual { get; set; }
+        public decimal TwoYearsPriorActual { get; set; }
+        public string Notes { get; set; }
     }
 }
