@@ -9,6 +9,7 @@ namespace WileyBudgetManagement.Database
 {
     public interface ISanitationRepository
     {
+        Task<BindingList<SanitationDistrict>> GetSanitationDataAsync();
         Task<BindingList<SanitationDistrict>> GetSanitationDistrictDataAsync();
         Task<BindingList<SanitationDistrict>> GetWaterDataAsync();
         Task<BindingList<SanitationDistrict>> GetTrashDataAsync();
@@ -28,6 +29,11 @@ namespace WileyBudgetManagement.Database
         public SanitationRepository(DatabaseManager databaseManager)
         {
             _databaseManager = databaseManager ?? throw new ArgumentNullException(nameof(databaseManager));
+        }
+
+        public async Task<BindingList<SanitationDistrict>> GetSanitationDataAsync()
+        {
+            return await GetSanitationDistrictDataAsync();
         }
 
         public async Task<BindingList<SanitationDistrict>> GetSanitationDistrictDataAsync()

@@ -28,6 +28,8 @@ namespace WileyBudgetManagement.Forms
         private ApartmentsInput? apartmentForm;
         private SummaryPage? summaryForm;
         private ReportsForm? reportsForm;
+        private AIQueryPanel? aiQueryForm;
+        private ResourcesForm? resourcesForm;
 
         public DashboardForm()
         {
@@ -98,7 +100,9 @@ namespace WileyBudgetManagement.Forms
                 new { Text = "🚿 Sanitation District", Action = new Action(() => ShowSanitationDistrictInput()) },
                 new { Text = "🗑️ Trash & Recycling", Action = new Action(() => ShowTrashInput()) },
                 new { Text = "🏠 Apartments Input", Action = new Action(() => ShowApartmentsInput()) },
-                new { Text = "📈 Summary & Analysis", Action = new Action(() => ShowSummaryPage()) },
+                new { Text = "🤖 AI Budget Assistant", Action = new Action(() => ShowAIQueryPanel()) },
+                new { Text = "� Resources", Action = new Action(() => ShowResources()) },
+                new { Text = "�📈 Summary & Analysis", Action = new Action(() => ShowSummaryPage()) },
                 new { Text = "📋 Reports", Action = new Action(() => ShowReports()) },
                 new { Text = "⚙️ Settings", Action = new Action(() => ShowSettings()) }
             };
@@ -409,6 +413,26 @@ For questions or support, contact the IT department."
             statusLabel.Text = "Apartments Input loaded";
         }
 
+        private void ShowAIQueryPanel()
+        {
+            if (aiQueryForm == null || aiQueryForm.IsDisposed)
+            {
+                aiQueryForm = new AIQueryPanel();
+            }
+            ShowFormInMainPanel(aiQueryForm);
+            statusLabel.Text = "AI Budget Assistant loaded - Ask natural language questions about municipal budgets";
+        }
+
+        private void ShowResources()
+        {
+            if (resourcesForm == null || resourcesForm.IsDisposed)
+            {
+                resourcesForm = new ResourcesForm();
+            }
+            ShowFormInMainPanel(resourcesForm);
+            statusLabel.Text = "Accounting Resources loaded - GASB-compliant account library available";
+        }
+
         private void ShowSummaryPage()
         {
             if (summaryForm == null || summaryForm.IsDisposed)
@@ -555,6 +579,8 @@ For questions or support, contact the IT department."
             apartmentForm?.Dispose();
             summaryForm?.Dispose();
             reportsForm?.Dispose();
+            aiQueryForm?.Dispose();
+            resourcesForm?.Dispose();
 
             base.OnFormClosing(e);
         }
@@ -580,6 +606,14 @@ For questions or support, contact the IT department."
                     break;
                 case "apartments":
                     ShowApartmentsInput();
+                    break;
+                case "ai":
+                case "aiquery":
+                    ShowAIQueryPanel();
+                    break;
+                case "resources":
+                case "accounting":
+                    ShowResources();
                     break;
                 case "summary":
                     ShowSummaryPage();
