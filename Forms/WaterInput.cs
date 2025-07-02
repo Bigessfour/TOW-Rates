@@ -735,59 +735,14 @@ namespace WileyBudgetManagement.Forms
 
         private void CalculateWaterScenarios(SanitationDistrict district)
         {
-            decimal baseMonthly = district.MonthlyInput;
+            // Use the enhanced Water Scenario Calculator
+            var waterList = new List<SanitationDistrict> { district };
+            WaterScenarioCalculator.CalculateWaterScenarios(waterList);
 
-            // Water Infrastructure Scenarios based on Rate Study Methodology
-            // Scenario 1: New Water Treatment Plant ($750,000, 20-year lifespan, 4% interest)
-            decimal treatmentPlantMonthlyImpact = 4544.22m; // PMT calculation
+            // The scenarios are now calculated by the dedicated calculator
+            // Apply any additional local adjustments if needed
 
-            // Scenario 2: Pipeline Replacement Program ($200,000 over 10 years, 3.5% interest)
-            decimal pipelineMonthlyImpact = 1962.16m;
-
-            // Scenario 3: Water Quality Upgrade ($125,000, 8 years, 3% interest)
-            decimal qualityUpgradeMonthlyImpact = 1479.86m;
-
-            switch (district.Section)
-            {
-                case "Revenue":
-                    // Revenue needs to cover infrastructure costs
-                    district.Scenario1 = baseMonthly + (treatmentPlantMonthlyImpact * district.PercentAllocation);
-                    district.Scenario2 = baseMonthly + (pipelineMonthlyImpact * district.PercentAllocation);
-                    district.Scenario3 = baseMonthly + (qualityUpgradeMonthlyImpact * district.PercentAllocation);
-                    break;
-
-                case "Operating":
-                    // Operating expenses directly impacted
-                    district.Scenario1 = baseMonthly + (treatmentPlantMonthlyImpact * 0.15m); // 15% operational impact
-                    district.Scenario2 = baseMonthly + (pipelineMonthlyImpact * 0.10m);
-                    district.Scenario3 = baseMonthly + district.GoalAdjustment;
-                    break;
-
-                case "Infrastructure":
-                    // Infrastructure directly affected
-                    district.Scenario1 = baseMonthly + treatmentPlantMonthlyImpact;
-                    district.Scenario2 = baseMonthly + pipelineMonthlyImpact;
-                    district.Scenario3 = baseMonthly + qualityUpgradeMonthlyImpact;
-                    break;
-
-                case "Quality":
-                    // Quality assurance costs
-                    district.Scenario1 = baseMonthly + (treatmentPlantMonthlyImpact * 0.05m);
-                    district.Scenario2 = baseMonthly + (pipelineMonthlyImpact * 0.03m);
-                    district.Scenario3 = baseMonthly + qualityUpgradeMonthlyImpact;
-                    break;
-
-                default:
-                    district.Scenario1 = baseMonthly;
-                    district.Scenario2 = baseMonthly;
-                    district.Scenario3 = baseMonthly;
-                    break;
-            }
-
-            // Apply time-of-use and affordability adjustments
-            ApplyFactors(district);
-
-            // Ensure scenarios are not negative
+            // Ensure minimum values
             district.Scenario1 = Math.Max(0, district.Scenario1);
             district.Scenario2 = Math.Max(0, district.Scenario2);
             district.Scenario3 = Math.Max(0, district.Scenario3);
@@ -812,53 +767,11 @@ namespace WileyBudgetManagement.Forms
 
         private void CalculateRequiredRate(SanitationDistrict district)
         {
-            try
-            {
-                decimal calculatedRate = 0;
-                decimal customerBase = GetTotalCustomerBase();
+            // Use the enhanced Water Scenario Calculator for rate calculations
+            var totalExpenses = GetTotalExpenses();
+            var totalRevenue = GetTotalRevenue();
 
-                if (customerBase <= 0)
-                {
-                    district.RequiredRate = 0;
-                    return;
-                }
-
-                switch (district.Section)
-                {
-                    case "Revenue":
-                        calculatedRate = CalculateRevenueRequiredRate(district, customerBase);
-                        break;
-                    case "Operating":
-                        calculatedRate = district.CurrentFYBudget / customerBase / 12;
-                        break;
-                    case "Infrastructure":
-                        calculatedRate = (district.CurrentFYBudget + district.GoalAdjustment) / customerBase / 12;
-                        break;
-                    case "Quality":
-                        calculatedRate = district.CurrentFYBudget / customerBase / 12;
-                        break;
-                    default:
-                        calculatedRate = 0;
-                        break;
-                }
-
-                // Apply adjustment factors
-                if (district.TimeOfUseFactor > 0 && district.TimeOfUseFactor != 1.0m)
-                {
-                    calculatedRate *= district.TimeOfUseFactor;
-                }
-
-                if (district.CustomerAffordabilityIndex > 0 && district.CustomerAffordabilityIndex != 1.0m)
-                {
-                    calculatedRate *= district.CustomerAffordabilityIndex;
-                }
-
-                district.RequiredRate = Math.Max(0, calculatedRate);
-            }
-            catch (Exception)
-            {
-                district.RequiredRate = 0;
-            }
+            district.RequiredRate = WaterScenarioCalculator.CalculateWaterRequiredRate(district, totalExpenses, totalRevenue);
         }
 
         private decimal CalculateRevenueRequiredRate(SanitationDistrict district, decimal customerBase)
