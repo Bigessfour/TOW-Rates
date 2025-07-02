@@ -32,7 +32,7 @@ namespace WileyBudgetManagement.Forms
             // 
             // SanitationDistrictInput
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1400, 800);
             this.MinimumSize = new System.Drawing.Size(1200, 600);

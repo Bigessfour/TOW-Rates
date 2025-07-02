@@ -1,6 +1,9 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using Syncfusion.WinForms.DataGrid;
+using Syncfusion.WinForms.DataGrid.Enums;
+using Syncfusion.WinForms.DataGrid.Styles;
 
 namespace WileyBudgetManagement.Forms
 {
@@ -370,32 +373,62 @@ namespace WileyBudgetManagement.Forms
         /// <summary>
         /// Apply consistent styling to Syncfusion DataGrid
         /// </summary>
-        public static void ApplySyncfusionDataGridStyle(dynamic dataGrid)
+        public static void ApplySyncfusionDataGridStyle(SfDataGrid dataGrid)
         {
             try
             {
-                // Note: Using dynamic to avoid direct Syncfusion references
-                // These properties should work with SfDataGrid
-                
+                // Header styling
                 dataGrid.Style.HeaderStyle.BackColor = SurfaceVariant;
                 dataGrid.Style.HeaderStyle.TextColor = NeutralDark;
-                dataGrid.Style.HeaderStyle.Font = SectionFont;
                 
+                // Cell styling
                 dataGrid.Style.CellStyle.BackColor = Surface;
                 dataGrid.Style.CellStyle.TextColor = NeutralDark;
-                dataGrid.Style.CellStyle.Font = BodyFont;
                 
+                // Selection styling
                 dataGrid.Style.SelectionStyle.BackColor = PrimaryBlueLight;
                 dataGrid.Style.SelectionStyle.TextColor = NeutralDark;
                 
-                // Grid lines
+                // Grid appearance
                 dataGrid.Style.BorderStyle = BorderStyle.FixedSingle;
-                dataGrid.GridLinesVisibility = true; // Assuming this property exists
+                dataGrid.Style.BorderColor = NeutralLight;
+                dataGrid.HeaderRowHeight = 32;
+                dataGrid.RowHeight = 28;
+                
+                // Column sizing
+                dataGrid.AutoSizeColumnsMode = AutoSizeColumnsMode.AllCells;
+                dataGrid.AllowResizingColumns = true;
+                
+                // Selection behavior
+                dataGrid.SelectionMode = GridSelectionMode.Single;
+                dataGrid.NavigationMode = NavigationMode.Cell;
+                
+                // Performance optimizations
+                dataGrid.EnableDataVirtualization = true;
             }
             catch (Exception ex)
             {
-                // Log styling error but don't crash
+                // Fallback styling for older versions
                 System.Diagnostics.Debug.WriteLine($"DataGrid styling error: {ex.Message}");
+                ApplySyncfusionDataGridFallbackStyle(dataGrid);
+            }
+        }
+        
+        /// <summary>
+        /// Fallback styling for compatibility
+        /// </summary>
+        public static void ApplySyncfusionDataGridFallbackStyle(dynamic dataGrid)
+        {
+            try
+            {
+                dataGrid.BackgroundColor = Surface;
+                dataGrid.AllowUserToResizeColumns = true;
+                dataGrid.AllowUserToResizeRows = false;
+                dataGrid.Font = BodyFont;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Fallback DataGrid styling error: {ex.Message}");
             }
         }
         

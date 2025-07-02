@@ -51,74 +51,96 @@ namespace WileyBudgetManagement.Forms
             this.Size = new Size(1600, 900);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.WindowState = FormWindowState.Maximized;
+            this.BackColor = UIStyleManager.SurfaceDark;
 
-            // Create main layout
-            CreateNavigationPanel();
-            CreateMainPanel();
-            CreateSummaryPanel();
-            CreateStatusBar();
+            // Create layout in proper Z-order (back to front)
+            CreateStatusBar();        // Bottom layer
+            CreateSummaryPanel();     // Summary at bottom
+            CreateMainPanel();        // Main content area
+            CreateNavigationPanel();  // Navigation on top/left
+            
+            // Show initial dashboard content
+            ShowDashboardOverview();
+            
+            // Force layout update
+            this.PerformLayout();
+            this.Refresh();
         }
 
         private void CreateNavigationPanel()
         {
             navigationPanel = new Panel
             {
-                Width = 250,
+                Width = 280,
                 Dock = DockStyle.Left,
                 BackColor = Color.FromArgb(45, 45, 48),
-                Padding = new Padding(10)
+                Padding = new Padding(15)
             };
 
-            // Title
-            titleLabel = new Label
+            // Title section
+            var titleSection = new Panel
             {
-                Text = "Budget Management",
-                Font = new Font("Segoe UI", 14, FontStyle.Bold),
-                ForeColor = Color.White,
+                Height = 80,
                 Dock = DockStyle.Top,
-                Height = 40,
-                TextAlign = ContentAlignment.MiddleCenter
-            };
-            navigationPanel.Controls.Add(titleLabel);
-
-            // Separator
-            var separator1 = new Panel
-            {
-                Height = 2,
-                Dock = DockStyle.Top,
-                BackColor = Color.FromArgb(0, 122, 204)
-            };
-            navigationPanel.Controls.Add(separator1);
-
-            // Navigation buttons
-            var buttonsPanel = new Panel
-            {
-                Dock = DockStyle.Fill,
                 BackColor = Color.Transparent
             };
 
-            var buttons = new[]
+            titleLabel = new Label
             {
-                new { Text = "📊 Dashboard Overview", Action = new Action(() => ShowDashboardOverview()) },
-                new { Text = "💧 Water District", Action = new Action(() => ShowWaterInput()) },
-                new { Text = "🚿 Sanitation District", Action = new Action(() => ShowSanitationDistrictInput()) },
-                new { Text = "🗑️ Trash & Recycling", Action = new Action(() => ShowTrashInput()) },
-                new { Text = "🏠 Apartments Input", Action = new Action(() => ShowApartmentsInput()) },
-                new { Text = "🤖 AI Budget Assistant", Action = new Action(() => ShowAIQueryPanel()) },
-                new { Text = "� Resources", Action = new Action(() => ShowResources()) },
-                new { Text = "�📈 Summary & Analysis", Action = new Action(() => ShowSummaryPage()) },
-                new { Text = "📋 Reports", Action = new Action(() => ShowReports()) },
-                new { Text = "⚙️ Settings", Action = new Action(() => ShowSettings()) }
+                Text = "Budget Management",
+                Font = new Font("Segoe UI", 16, FontStyle.Bold),
+                ForeColor = Color.White,
+                Dock = DockStyle.Fill,
+                TextAlign = ContentAlignment.MiddleCenter
+            };
+            titleSection.Controls.Add(titleLabel);
+
+            // Separator
+            var separator = new Panel
+            {
+                Height = 2,
+                Dock = DockStyle.Top,
+                BackColor = UIStyleManager.PrimaryBlue,
+                Margin = new Padding(0, 10, 0, 20)
             };
 
-            for (int i = 0; i < buttons.Length; i++)
+            // Navigation buttons container
+            var buttonsContainer = new Panel
             {
-                var button = CreateNavigationButton(buttons[i].Text, buttons[i].Action);
-                button.Location = new Point(10, 10 + (i * 50));
-                buttonsPanel.Controls.Add(button);
+                Dock = DockStyle.Fill,
+                BackColor = Color.Transparent,
+                AutoScroll = true
+            };
+
+            // Create navigation buttons
+            var buttons = new[]
+            {
+                new { Text = UIIconManager.CreateButtonText("Dashboard", "Dashboard Overview"), Action = new Action(() => ShowDashboardOverview()) },
+                new { Text = UIIconManager.CreateButtonText("Water", "Water District"), Action = new Action(() => ShowWaterInput()) },
+                new { Text = UIIconManager.CreateButtonText("Sanitation", "Sanitation District"), Action = new Action(() => ShowSanitationDistrictInput()) },
+                new { Text = UIIconManager.CreateButtonText("Trash", "Trash & Recycling"), Action = new Action(() => ShowTrashInput()) },
+                new { Text = UIIconManager.CreateButtonText("Apartments", "Apartments Input"), Action = new Action(() => ShowApartmentsInput()) },
+                new { Text = UIIconManager.CreateButtonText("AI", "AI Budget Assistant"), Action = new Action(() => ShowAIQueryPanel()) },
+                new { Text = UIIconManager.CreateButtonText("Resources", "Resources"), Action = new Action(() => ShowResources()) },
+                new { Text = UIIconManager.CreateButtonText("Summary", "Summary & Analysis"), Action = new Action(() => ShowSummaryPage()) },
+                new { Text = UIIconManager.CreateButtonText("Reports", "Reports"), Action = new Action(() => ShowReports()) },
+                new { Text = UIIconManager.CreateButtonText("Settings", "Settings"), Action = new Action(() => ShowSettings()) }
+            };
+
+            int yPosition = 10;
+            foreach (var buttonInfo in buttons)
+            {
+                var button = CreateNavigationButton(buttonInfo.Text, buttonInfo.Action);
+                button.Location = new Point(10, yPosition);
+                buttonsContainer.Controls.Add(button);
+                yPosition += 55; // 45px button + 10px spacing
             }
 
-            navigationPanel.Controls.Add(buttonsPanel);
+            // Add components to navigation panel
+            navigationPanel.Controls.Add(buttonsContainer);
+            navigationPanel.Controls.Add(separator);
+            navigationPanel.Controls.Add(titleSection);
+
             this.Controls.Add(navigationPanel);
         }
 
@@ -127,19 +149,53 @@ namespace WileyBudgetManagement.Forms
             var button = new Button
             {
                 Text = text,
-                Size = new Size(220, 40),
-                Cursor = Cursors.Hand
+                Size = new Size(220, 45),
+                Cursor = Cursors.Hand,
+                Margin = new Padding(5),
+                FlatStyle = FlatStyle.Flat,
+                TextAlign = ContentAlignment.MiddleLeft,
+                Font = new Font("Segoe UI", 10, FontStyle.Regular)
             };
 
-            // Apply modern styling using UIStyleManager
+            // Apply modern styling
             UIStyleManager.ApplySecondaryButtonStyle(button);
             button.FlatAppearance.MouseOverBackColor = UIStyleManager.PrimaryBlue;
             button.FlatAppearance.MouseDownBackColor = UIStyleManager.PrimaryBlueDark;
-            button.TextAlign = ContentAlignment.MiddleLeft;
             button.ForeColor = Color.White;
             button.BackColor = Color.FromArgb(62, 62, 66);
 
-            button.Click += (sender, e) => action();
+            // Add click handler with error handling
+            button.Click += (sender, e) => 
+            {
+                try
+                {
+                    // Update status
+                    if (statusLabel != null)
+                    {
+                        statusLabel.Text = $"Loading: {text}";
+                        statusLabel.Refresh();
+                    }
+                    
+                    // Execute action
+                    action();
+                    
+                    // Update status on success
+                    if (statusLabel != null)
+                    {
+                        statusLabel.Text = $"Loaded: {text}";
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error loading {text}: {ex.Message}", "Navigation Error", 
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    
+                    if (statusLabel != null)
+                    {
+                        statusLabel.Text = $"Error loading: {text}";
+                    }
+                }
+            };
 
             return button;
         }
@@ -194,40 +250,112 @@ namespace WileyBudgetManagement.Forms
 
         private void ShowDashboardOverview()
         {
-            contentPanel.Controls.Clear();
-
-            var overviewPanel = new Panel
+            try
             {
-                Dock = DockStyle.Fill,
-                BackColor = Color.White,
-                Padding = new Padding(20)
-            };
+                if (contentPanel == null)
+                {
+                    throw new InvalidOperationException("Content panel not initialized");
+                }
 
-            // Welcome message
-            var welcomeLabel = new Label
+                contentPanel.Controls.Clear();
+
+                var overviewPanel = new Panel
+                {
+                    Dock = DockStyle.Fill,
+                    BackColor = Color.White,
+                    Padding = new Padding(30),
+                    AutoScroll = true
+                };
+
+                // Welcome header with better styling
+                var headerPanel = new Panel
+                {
+                    Height = 80,
+                    Dock = DockStyle.Top,
+                    BackColor = Color.White
+                };
+
+                var welcomeLabel = new Label
+                {
+                    Text = "Town of Wiley Budget Management System",
+                    Font = new Font("Segoe UI", 24, FontStyle.Bold),
+                    ForeColor = UIStyleManager.NeutralDark,
+                    Dock = DockStyle.Fill,
+                    TextAlign = ContentAlignment.MiddleCenter
+                };
+                headerPanel.Controls.Add(welcomeLabel);
+
+                // Subtitle
+                var subtitlePanel = new Panel
+                {
+                    Height = 40,
+                    Dock = DockStyle.Top,
+                    BackColor = Color.White
+                };
+
+                var subtitleLabel = new Label
+                {
+                    Text = "Municipal Utility Rate Management Dashboard",
+                    Font = new Font("Segoe UI", 14, FontStyle.Regular),
+                    ForeColor = UIStyleManager.NeutralMedium,
+                    Dock = DockStyle.Fill,
+                    TextAlign = ContentAlignment.MiddleCenter
+                };
+                subtitlePanel.Controls.Add(subtitleLabel);
+
+                // Spacer
+                var spacer1 = UIStyleManager.CreateSpacer(20);
+
+                // Quick stats panel with improved layout
+                var statsPanel = CreateQuickStatsPanel();
+                statsPanel.Dock = DockStyle.Top;
+                statsPanel.Height = 180;
+
+                // Another spacer
+                var spacer2 = UIStyleManager.CreateSpacer(20);
+
+                // Instructions panel with better formatting
+                var instructionsPanel = CreateInstructionsPanel();
+                instructionsPanel.Dock = DockStyle.Fill;
+
+                // Add all components in order
+                overviewPanel.Controls.Add(instructionsPanel);  // Fill (bottom)
+                overviewPanel.Controls.Add(spacer2);           // Spacer
+                overviewPanel.Controls.Add(statsPanel);        // Stats
+                overviewPanel.Controls.Add(spacer1);           // Spacer
+                overviewPanel.Controls.Add(subtitlePanel);     // Subtitle
+                overviewPanel.Controls.Add(headerPanel);       // Header (top)
+
+                contentPanel.Controls.Add(overviewPanel);
+                
+                if (statusLabel != null)
+                    statusLabel.Text = UIIconManager.CreateStatusText("Dashboard", "Dashboard Overview loaded");
+                
+                System.Diagnostics.Debug.WriteLine("Dashboard overview loaded successfully");
+            }
+            catch (Exception ex)
             {
-                Text = "Town of Wiley Budget Management System",
-                Font = new Font("Segoe UI", 18, FontStyle.Bold),
-                ForeColor = Color.FromArgb(45, 45, 48),
-                Dock = DockStyle.Top,
-                Height = 50,
-                TextAlign = ContentAlignment.MiddleCenter
-            };
-            overviewPanel.Controls.Add(welcomeLabel);
-
-            // Quick stats panel
-            var statsPanel = CreateQuickStatsPanel();
-            statsPanel.Dock = DockStyle.Top;
-            statsPanel.Height = 200;
-            overviewPanel.Controls.Add(statsPanel);
-
-            // Recent activity or instructions
-            var instructionsPanel = CreateInstructionsPanel();
-            instructionsPanel.Dock = DockStyle.Fill;
-            overviewPanel.Controls.Add(instructionsPanel);
-
-            contentPanel.Controls.Add(overviewPanel);
-            statusLabel.Text = "Dashboard Overview loaded";
+                var errorMsg = $"Failed to load Dashboard Overview: {ex.Message}";
+                System.Diagnostics.Debug.WriteLine($"ShowDashboardOverview Error: {ex}");
+                
+                if (statusLabel != null)
+                    statusLabel.Text = $"Dashboard Error: {ex.Message}";
+                
+                // Show a simple error message in content panel
+                if (contentPanel != null)
+                {
+                    contentPanel.Controls.Clear();
+                    var errorLabel = new Label
+                    {
+                        Text = $"Dashboard Loading Error:\n{ex.Message}",
+                        Font = new Font("Segoe UI", 12),
+                        ForeColor = Color.Red,
+                        TextAlign = ContentAlignment.MiddleCenter,
+                        Dock = DockStyle.Fill
+                    };
+                    contentPanel.Controls.Add(errorLabel);
+                }
+            }
         }
 
         private Panel CreateQuickStatsPanel()
@@ -381,22 +509,62 @@ For questions or support, contact the IT department."
 
         private void ShowWaterInput()
         {
-            if (waterForm == null || waterForm.IsDisposed)
+            try
             {
-                waterForm = new WaterInput();
+                if (waterForm == null || waterForm.IsDisposed)
+                {
+                    if (statusLabel != null)
+                        statusLabel.Text = "Creating Water District form...";
+                    
+                    waterForm = new WaterInput();
+                    System.Diagnostics.Debug.WriteLine("Water form created successfully");
+                }
+                
+                ShowFormInMainPanel(waterForm);
+                
+                if (statusLabel != null)
+                    statusLabel.Text = UIIconManager.CreateStatusText("Water", "Water District Input loaded");
             }
-            ShowFormInMainPanel(waterForm);
-            statusLabel.Text = "Water District Input loaded";
+            catch (Exception ex)
+            {
+                var errorMsg = $"Failed to load Water District: {ex.Message}";
+                System.Diagnostics.Debug.WriteLine($"ShowWaterInput Error: {ex}");
+                
+                MessageBox.Show(errorMsg, "Form Loading Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                
+                if (statusLabel != null)
+                    statusLabel.Text = $"Error: {ex.Message}";
+            }
         }
 
         private void ShowSanitationDistrictInput()
         {
-            if (sanitationForm == null || sanitationForm.IsDisposed)
+            try
             {
-                sanitationForm = new SanitationDistrictInput();
+                if (sanitationForm == null || sanitationForm.IsDisposed)
+                {
+                    if (statusLabel != null)
+                        statusLabel.Text = "Creating Sanitation District form...";
+                    
+                    sanitationForm = new SanitationDistrictInput();
+                    System.Diagnostics.Debug.WriteLine("Sanitation form created successfully");
+                }
+                
+                ShowFormInMainPanel(sanitationForm);
+                
+                if (statusLabel != null)
+                    statusLabel.Text = UIIconManager.CreateStatusText("Sanitation", "Sanitation District Input loaded");
             }
-            ShowFormInMainPanel(sanitationForm);
-            statusLabel.Text = "Sanitation District Input loaded";
+            catch (Exception ex)
+            {
+                var errorMsg = $"Failed to load Sanitation District: {ex.Message}";
+                System.Diagnostics.Debug.WriteLine($"ShowSanitationDistrictInput Error: {ex}");
+                
+                MessageBox.Show(errorMsg, "Form Loading Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                
+                if (statusLabel != null)
+                    statusLabel.Text = $"Error: {ex.Message}";
+            }
         }
 
         private void ShowTrashInput()
@@ -470,23 +638,50 @@ For questions or support, contact the IT department."
         {
             try
             {
+                // Validate inputs
+                if (form == null)
+                {
+                    throw new ArgumentNullException(nameof(form), "Form cannot be null");
+                }
+
+                if (contentPanel == null)
+                {
+                    throw new InvalidOperationException("Content panel is not initialized");
+                }
+
                 // Remove previous controls
                 contentPanel.Controls.Clear();
 
+                // Prepare form for embedding
                 form.TopLevel = false;
                 form.FormBorderStyle = FormBorderStyle.None;
                 form.Dock = DockStyle.Fill;
                 form.Parent = contentPanel;
 
+                // Add and show form
                 contentPanel.Controls.Add(form);
                 form.Show();
                 form.BringToFront();
+                
+                // Force refresh
+                contentPanel.Refresh();
+                this.Refresh();
+                
+                System.Diagnostics.Debug.WriteLine($"Successfully loaded form: {form.GetType().Name}");
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading form: {ex.Message}", "Error",
+                var errorMsg = $"Error loading form: {ex.Message}\n\nForm Type: {form?.GetType().Name ?? "null"}\nContent Panel: {(contentPanel == null ? "null" : "initialized")}";
+                
+                MessageBox.Show(errorMsg, "Form Loading Error",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
-                statusLabel.Text = "Error loading form";
+                
+                if (statusLabel != null)
+                {
+                    statusLabel.Text = $"Error: {ex.Message}";
+                }
+                
+                System.Diagnostics.Debug.WriteLine($"ShowFormInMainPanel Error: {ex}");
             }
         }
 
@@ -545,36 +740,13 @@ For questions or support, contact the IT department."
             }
         }
 
-        // Event handlers for legacy compatibility
-        private void btnWaterInput_Click(object sender, EventArgs e)
-        {
-            ShowWaterInput();
-        }
-
-        private void btnSanitationDistrictInput_Click(object sender, EventArgs e)
-        {
-            ShowSanitationDistrictInput();
-        }
-
-        private void btnApartmentsInput_Click(object sender, EventArgs e)
-        {
-            ShowApartmentsInput();
-        }
-
-        private void btnTrashInput_Click(object sender, EventArgs e)
-        {
-            ShowTrashInput();
-        }
-
-        private void btnSummaryPage_Click(object sender, EventArgs e)
-        {
-            ShowSummaryPage();
-        }
-
-        private void btnReports_Click(object sender, EventArgs e)
-        {
-            ShowReports();
-        }
+        // Event handlers for legacy compatibility (empty implementations)
+        private void btnWaterInput_Click(object? sender, EventArgs e) => ShowWaterInput();
+        private void btnSanitationDistrictInput_Click(object? sender, EventArgs e) => ShowSanitationDistrictInput();
+        private void btnApartmentsInput_Click(object? sender, EventArgs e) => ShowApartmentsInput();
+        private void btnTrashInput_Click(object? sender, EventArgs e) => ShowTrashInput();
+        private void btnSummaryPage_Click(object? sender, EventArgs e) => ShowSummaryPage();
+        private void btnReports_Click(object? sender, EventArgs e) => ShowReports();
 
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
